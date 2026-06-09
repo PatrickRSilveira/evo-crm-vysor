@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -70,7 +70,6 @@ export default function PremiumConfig() {
     register,
     handleSubmit,
     reset,
-    control,
     setValue,
     watch,
   } = useForm<PremiumFormData>({
