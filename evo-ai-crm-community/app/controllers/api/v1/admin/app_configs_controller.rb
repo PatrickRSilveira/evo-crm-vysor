@@ -41,7 +41,8 @@ module Api
           ],
           'push_notifications' => %w[FIREBASE_PROJECT_ID FIREBASE_CREDENTIALS_SECRET
                                      IOS_APP_ID ANDROID_BUNDLE_ID],
-          'frontend_runtime' => %w[RECAPTCHA_SITE_KEY CLARITY_PROJECT_ID]
+          'frontend_runtime' => %w[RECAPTCHA_SITE_KEY CLARITY_PROJECT_ID],
+          'white_label' => %w[COMPANY_NAME APP_LOGO_URL APP_PRIMARY_COLOR]
         }.freeze
 
         # Required-key enforcement: see `IntegrationRequirements` for the per-integration
