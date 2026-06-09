@@ -3,7 +3,18 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, BackgroundTasks
 from pydantic import BaseModel
 
-from src.services.evo_auth_service import verify_evo_auth
+from fastapi import Request
+from src.api.dependencies import get_current_user
+
+async def verify_evo_auth(
+    request: Request,
+    current_user: dict = Depends(get_current_user)
+) -> int:
+    user_dict = getattr(request.state, "current_user", {})
+    account_id = user_dict.get("current_account_id") or user_dict.get("account_id")
+    if account_id is None:
+        account_id = 1
+    return account_id
 from src.services.database_service import get_database_service, DatabaseService
 from src.services.knowledge_service import KnowledgeService
 
