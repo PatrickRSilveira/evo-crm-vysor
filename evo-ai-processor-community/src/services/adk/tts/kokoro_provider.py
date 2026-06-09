@@ -17,12 +17,16 @@ class KokoroProvider(TTSProvider):
         if not token:
             raise ValueError("Kokoro provider requires an API token (apiKey).")
 
+        model_name = "kokoro-v1"
+        if "openrouter" in api_url.lower():
+            model_name = "hexgrad/kokoro-82m"
+
         timeout = httpx.Timeout(60.0)
         async with httpx.AsyncClient(timeout=timeout) as client:
             json_payload = {
                 "input": text,
                 "voice": voice_id,
-                "model": "kokoro-v1"
+                "model": model_name
             }
                 
             response = await client.post(
