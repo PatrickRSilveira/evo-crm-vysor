@@ -3,9 +3,13 @@ OpenAI provider service for external agent integration.
 """
 
 import logging
-from typing import Dict, Any, Optional, List
 import httpx
+from typing import Dict, Any, Optional, List
 from openai import OpenAI
+import asyncio
+
+from src.services.knowledge_service import KnowledgeService
+from src.services.database_service import get_database_service
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +47,7 @@ class OpenAIService:
             raise ValueError("OpenAI model is required for chatCompletion type")
         
         self.client = OpenAI(api_key=self.api_key)
+        self.knowledge_service = KnowledgeService(get_database_service())
 
     async def send_message(
         self,
@@ -101,6 +106,23 @@ class OpenAIService:
                 )
                 thread_id = thread.id
 
+        # Retrieve RAG context if applicable
+        rag_context = ""
+        agent_bot_id_str = context.get("agent_bot_id") if context else None
+        if agent_bot_id_str:
+            try:
+                rag_text = await self.knowledge_service.search_agent_knowledge(
+                    agent_bot_id=int(agent_bot_id_str), 
+                    query=message,
+                    limit=5
+                )
+                if rag_text:
+                    rag_context = f"\n\n[System note: Use the following knowledge base context to help answer the user. Prioritize this context:]\n\n{rag_text}"
+            except Exception as e:
+                logger.error(f"Error retrieving RAG context for assistant: {e}")
+                
+        enhanced_message = message + rag_context
+
         # Add message to thread
         loop = asyncio.get_event_loop()
         await loop.run_in_executor(
@@ -108,7 +130,7 @@ class OpenAIService:
             lambda: self.client.beta.threads.messages.create(
                 thread_id,
                 role="user",
-                content=message,
+                content=enhanced_message,
             )
         )
 
@@ -175,6 +197,22 @@ class OpenAIService:
         # Add system messages
         for sys_msg in self.system_messages:
             messages.append({"role": "system", "content": sys_msg})
+            
+        # Check if we have an agent_bot_id to fetch RAG
+        agent_bot_id_str = context.get("agent_bot_id") if context else None
+        if agent_bot_id_str:
+            try:
+                # Retrieve relevant context from Knowledge Base
+                rag_text = await self.knowledge_service.search_agent_knowledge(
+                    agent_bot_id=int(agent_bot_id_str), 
+                    query=message,
+                    limit=5
+                )
+                if rag_text:
+                    rag_prompt = f"Use the following knowledge base context to help answer the user's question. If the answer is not in the context, you can use your general knowledge, but prioritize the provided context:\n\n{rag_text}"
+                    messages.append({"role": "system", "content": rag_prompt})
+            except Exception as e:
+                logger.error(f"Error retrieving RAG context: {e}")
         
         # Add user message
         messages.append({"role": "user", "content": message})

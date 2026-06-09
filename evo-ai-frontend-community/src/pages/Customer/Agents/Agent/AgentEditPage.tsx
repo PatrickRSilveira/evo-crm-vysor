@@ -1022,7 +1022,7 @@ const AgentEditPage = () => {
       />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         {/* Header */}
         <AgentEditHeader
           onBack={() => navigate('/agents/list')}
@@ -1033,7 +1033,7 @@ const AgentEditPage = () => {
         />
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">{renderContent()}</div>
+        <div className="flex-1 overflow-auto p-6">{renderContent()}</div>
       </div>
 
       {/* Chat de Teste */}

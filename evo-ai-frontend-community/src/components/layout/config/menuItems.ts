@@ -226,6 +226,11 @@ export const getCustomerMenuItems = (t: (key: string) => string): MenuItem[] => 
         action: 'read',
       },
       {
+        name: 'Base de Conhecimento (RAG)',
+        href: '/settings/knowledge-base',
+        icon: BookOpen as any,
+      },
+      {
         name: t('menu.settings.macros'),
         href: '/settings/macros',
         icon: Settings,

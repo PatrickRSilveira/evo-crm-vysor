@@ -24,6 +24,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { adminConfigService } from '@/services/admin/adminConfigService';
 import { extractError } from '@/utils/apiHelpers';
 import type { AdminConfigData } from '@/types/admin/adminConfig';
+import ModelSelector from '@/components/ai_agents/ModelSelector';
 
 // --- Schema factory with i18n ---
 
@@ -314,15 +315,22 @@ export default function OpenAIConfig() {
             {renderSecretField('OPENAI_API_SECRET', t('openai.connection.fields.apiSecret'), t('openai.connection.placeholders.apiSecret'))}
 
             <div className="space-y-2">
-              <Label htmlFor="OPENAI_MODEL">{t('openai.connection.fields.model')}</Label>
-              <Input
-                id="OPENAI_MODEL"
-                placeholder={t('openai.connection.placeholders.model')}
-                {...register('OPENAI_MODEL')}
+              <Controller
+                name="OPENAI_MODEL"
+                control={control}
+                render={({ field }) => (
+                  <ModelSelector
+                    id="OPENAI_MODEL"
+                    value={field.value || ''}
+                    onChange={field.onChange}
+                    apiKeys={[]} // Pass empty array so it shows availableModels
+                    label={t('openai.connection.fields.model')}
+                    showLabel={true}
+                    className="w-full"
+                    error={errors.OPENAI_MODEL?.message}
+                  />
+                )}
               />
-              {errors.OPENAI_MODEL && (
-                <p className="text-xs text-destructive">{errors.OPENAI_MODEL.message}</p>
-              )}
             </div>
 
             <Controller

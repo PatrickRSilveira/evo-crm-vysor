@@ -65,6 +65,7 @@ import src.api.session_routes
 import src.api.a2a_routes
 import src.api.custom_mcp_servers_routes
 import src.api.tools_routes
+import src.api.knowledge_routes
 import src.api.system_routes
 import src.api.google_calendar_routes
 import src.api.google_sheets_routes
@@ -161,6 +162,7 @@ session_router = src.api.session_routes.router
 a2a_router = src.api.a2a_routes.router
 custom_mcp_server_router = src.api.custom_mcp_servers_routes.router
 tools_router = src.api.tools_routes.router
+knowledge_router = src.api.knowledge_routes.router
 system_router = src.api.system_routes.router
 google_calendar_router = src.api.google_calendar_routes.router
 google_calendar_callback_router = src.api.google_calendar_routes.callback_router
@@ -195,6 +197,7 @@ app.include_router(chat_router, prefix=API_PREFIX)
 app.include_router(session_router, prefix=API_PREFIX)
 app.include_router(a2a_router, prefix=API_PREFIX)
 app.include_router(tools_router, prefix=API_PREFIX)
+app.include_router(knowledge_router, prefix=API_PREFIX)
 app.include_router(google_calendar_router, prefix=API_PREFIX)
 app.include_router(google_calendar_callback_router, prefix=API_PREFIX)
 app.include_router(google_sheets_router, prefix=API_PREFIX)

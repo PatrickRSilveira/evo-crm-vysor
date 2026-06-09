@@ -30,6 +30,10 @@ export * from './pipelines';
 // Core Infrastructure
 export * from './core';
 
+export * from './reports';
+export * from './knowledgeBases';
+export { setupService } from './setup';
+
 // Legacy default exports for backward compatibility
 // DEPRECATED: Use named imports from categories instead
 export { default as api } from './core/api';

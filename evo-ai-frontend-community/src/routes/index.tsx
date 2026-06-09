@@ -61,6 +61,7 @@ import CannedResponses from '@/pages/Customer/Settings/CannedResponses';
 import { Macros } from '@/pages/Customer/Settings/Macros';
 import Products from '@/pages/Customer/Settings/Products';
 import Templates from '@/pages/Customer/Settings/Templates/Templates';
+import KnowledgeBasePage from '@/pages/Customer/Settings/KnowledgeBase/KnowledgeBasePage';
 import { Integrations } from '@/pages/Customer/Settings/Integrations';
 import EmailTemplateEditor from '@/pages/Customer/Settings/EmailTemplateEditor';
 import WebhooksPage from '../pages/Customer/Settings/Integrations/WebhooksPage';
@@ -1478,6 +1479,28 @@ const AppRouter = () => {
                   <Marketplace />
                 </MainLayout>
               </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/settings/canned-responses"
+            element={
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <CannedResponses />
+                </Suspense>
+              </ErrorBoundary>
+            }
+          />
+          
+          <Route
+            path="/settings/knowledge-base"
+            element={
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <KnowledgeBasePage />
+                </Suspense>
+              </ErrorBoundary>
             }
           />
 

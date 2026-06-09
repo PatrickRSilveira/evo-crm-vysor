@@ -238,6 +238,11 @@ Rails.application.routes.draw do
         get :runs, on: :member
       end
 
+      resources :knowledge_bases, only: [:index, :create, :show, :update, :destroy] do
+        resources :knowledge_documents, only: [:index, :create, :show, :update, :destroy]
+        resources :agent_bots, controller: 'knowledge_bases/agent_bots', only: [:index, :create, :destroy]
+      end
+
       # Product Catalog (EVO-1109)
       resources :products, only: [:index, :create, :show, :update, :destroy], controller: 'products' do
         resources :variants, controller: 'products/variants', only: [:index, :create, :update, :destroy]
