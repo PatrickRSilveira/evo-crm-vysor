@@ -38,7 +38,6 @@ class ApiKey(BaseModel):
     id: UUID4
     name: str
     provider: str
-    base_url: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
     is_active: bool
