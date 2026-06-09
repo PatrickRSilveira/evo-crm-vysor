@@ -981,6 +981,21 @@ async def handle_message_send(
     elif not text:
         text = " "  # Send a blank space to prevent LLM validation errors
 
+    # Check TTS config and append strong instruction if needed to force weak models
+    agent_config = agent.config or {}
+    integrations = agent_config.get("integrations", {})
+    tts_config = integrations.get("tts") or integrations.get("elevenlabs")
+    
+    if tts_config and tts_config.get("apiKey") and (tts_config.get("voice") or tts_config.get("voice_id")):
+        respond_in_audio = tts_config.get("respondInAudio", "when_client_asks")
+        
+        # Check if the user sent an audio message
+        metadata = params.get("metadata", {})
+        has_audio = metadata.get("has_audio", False)
+        
+        if respond_in_audio == "always" or (respond_in_audio == "when_client_asks" and has_audio):
+            text += "\n\nCRITICAL SYSTEM INSTRUCTION: You MUST use the text_to_speech tool to generate an audio version of your response. Return the generated audio URL."
+
     logger.info(f"📝 Extracted text: {text}")
     logger.info(f"📎 Extracted files: {len(files)}")
 
