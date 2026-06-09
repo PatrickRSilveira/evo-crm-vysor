@@ -222,9 +222,12 @@ export default function PremiumConfig() {
                     className="flex-1 bg-background/50 focus:bg-background transition-colors uppercase"
                     {...register('APP_PRIMARY_COLOR')}
                   />
-                  <div 
-                    className="w-10 h-10 rounded-md border shadow-sm flex-shrink-0" 
-                    style={{ backgroundColor: watch('APP_PRIMARY_COLOR') || '#1f93ff' }}
+                  <input
+                    type="color"
+                    className="w-10 h-10 p-0 border-0 rounded-md cursor-pointer flex-shrink-0 bg-transparent"
+                    value={watch('APP_PRIMARY_COLOR') || '#1f93ff'}
+                    onChange={(e) => setValue('APP_PRIMARY_COLOR', e.target.value, { shouldDirty: true })}
+                    title="Selecione a cor"
                   />
                 </div>
               </div>
@@ -347,7 +350,20 @@ export default function PremiumConfig() {
           </Card>
         </div>
 
-        <div className="flex justify-end pt-4 pb-12">
+        <div className="flex justify-end gap-4 pt-4 pb-12">
+          <Button 
+            type="button" 
+            variant="outline"
+            disabled={saving} 
+            size="lg"
+            onClick={() => {
+              reset(DEFAULTS);
+              toast.info('Configurações redefinidas para o padrão. Não esqueça de Salvar.');
+            }}
+          >
+            Restaurar Padrões
+          </Button>
+
           <Button 
             type="submit" 
             disabled={saving} 

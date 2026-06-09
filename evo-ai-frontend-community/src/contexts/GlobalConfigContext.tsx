@@ -157,10 +157,13 @@ export const GlobalConfigProvider: React.FC<{ children: React.ReactNode }> = ({ 
           }
 
           // Injetar White-Label (Nome e Cor Primária)
-          if (configData.companyName) {
-            document.title = configData.companyName;
+          const companyName = configData.companyName || (configData as any).COMPANY_NAME;
+          if (companyName) {
+            document.title = companyName;
           }
-          if (configData.appPrimaryColor) {
+          
+          const primaryColor = configData.appPrimaryColor || (configData as any).APP_PRIMARY_COLOR;
+          if (primaryColor) {
             const hexToHsl = (hex: string) => {
               hex = hex.replace(/^#/, '');
               if (hex.length === 3) hex = hex.split('').map(x => x + x).join('');
@@ -182,7 +185,7 @@ export const GlobalConfigProvider: React.FC<{ children: React.ReactNode }> = ({ 
               return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
             };
 
-            const hslValue = hexToHsl(configData.appPrimaryColor);
+            const hslValue = hexToHsl(primaryColor);
             
             // Set the raw components for standard Shadcn UI/Tailwind setups (e.g. `210 100% 50%`)
             document.documentElement.style.setProperty('--primary', hslValue);

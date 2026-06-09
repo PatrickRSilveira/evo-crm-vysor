@@ -1487,22 +1487,30 @@ const AppRouter = () => {
           <Route
             path="/settings/canned-responses"
             element={
-              <ErrorBoundary>
-                <Suspense fallback={<LoadingScreen />}>
-                  <CannedResponses />
-                </Suspense>
-              </ErrorBoundary>
+              <PrivateRoute>
+                <MainLayout>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingScreen />}>
+                      <CannedResponses />
+                    </Suspense>
+                  </ErrorBoundary>
+                </MainLayout>
+              </PrivateRoute>
             }
           />
           
           <Route
             path="/settings/knowledge-base"
             element={
-              <ErrorBoundary>
-                <Suspense fallback={<LoadingScreen />}>
-                  <KnowledgeBasePage />
-                </Suspense>
-              </ErrorBoundary>
+              <PrivateRoute>
+                <MainLayout>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingScreen />}>
+                      <KnowledgeBasePage />
+                    </Suspense>
+                  </ErrorBoundary>
+                </MainLayout>
+              </PrivateRoute>
             }
           />
 

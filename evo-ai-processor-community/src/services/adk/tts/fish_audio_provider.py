@@ -17,6 +17,7 @@ class FishAudioProvider(TTSProvider):
         async with httpx.AsyncClient(timeout=timeout) as client:
             json_payload = {
                 "text": text,
+                "format": "mp3"
             }
             if voice_id:
                 json_payload["reference_id"] = voice_id
@@ -25,7 +26,8 @@ class FishAudioProvider(TTSProvider):
                 "https://api.fish.audio/v1/tts",
                 headers={
                     "Authorization": f"Bearer {token}",
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "model": "s2-pro"
                 },
                 json=json_payload,
             )
