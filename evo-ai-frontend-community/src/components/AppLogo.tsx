@@ -13,11 +13,17 @@ interface AppLogoProps {
 
 export function AppLogo({ className, alt = 'EVO CRM', style, forceTheme }: AppLogoProps) {
   const { theme } = useDarkMode();
-  const { appLogoUrl, companyName } = useGlobalConfig();
+  const { appLogoUrl, companyName, appLogoWidth, appLogoHeight } = useGlobalConfig();
   
   const effectiveTheme = forceTheme ?? theme;
   const src = appLogoUrl || (effectiveTheme === 'dark' ? logoDark : logoLight);
   const effectiveAlt = companyName || alt;
 
-  return <img src={src} alt={effectiveAlt} className={className} style={style} />;
+  const finalStyle = {
+    ...style,
+    ...(appLogoWidth ? { width: `${appLogoWidth}px` } : {}),
+    ...(appLogoHeight ? { height: `${appLogoHeight}px` } : {}),
+  };
+
+  return <img src={src} alt={effectiveAlt} className={className} style={finalStyle} />;
 }

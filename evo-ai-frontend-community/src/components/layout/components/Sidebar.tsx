@@ -13,6 +13,7 @@ import MenuItem from './MenuItem';
 import { MenuItem as MenuItemType } from '../config/menuItems';
 import { cn } from '@/utils/cn';
 import { PluginSlot } from '@/plugin-host';
+import { useGlobalConfig } from '@/contexts/GlobalConfigContext';
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -36,6 +37,7 @@ export default function Sidebar({
   const location = useLocation();
   const pathname = location.pathname;
   const { t } = useLanguage('layout');
+  const globalConfig = useGlobalConfig();
   const currentYear = new Date().getFullYear();
   const flyoutRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
@@ -213,7 +215,7 @@ export default function Sidebar({
               <>
                 <div className="text-sm text-primary font-medium">{companyName}</div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  {t('sidebar.footer.copyright', { year: currentYear })}
+                  {globalConfig.sidebarCopyrightText || t('sidebar.footer.copyright', { year: currentYear })}
                 </div>
                 {__APP_VERSION__ !== 'dev' && (
                   <div className="text-xs text-muted-foreground/70 mt-1">
@@ -222,7 +224,7 @@ export default function Sidebar({
                 )}
                 <div className="mt-2 flex flex-col gap-1 text-xs">
                   <a
-                    href="https://docs.evolutionfoundation.com.br/"
+                    href={globalConfig.docsLink || "https://docs.evolutionfoundation.com.br/"}
                     target="_blank"
                     rel="noreferrer"
                     className="text-muted-foreground hover:text-foreground transition-colors"
@@ -230,7 +232,7 @@ export default function Sidebar({
                     {t('sidebar.footer.documentation')}
                   </a>
                   <a
-                    href={supportWhatsappUrl}
+                    href={globalConfig.supportLink || supportWhatsappUrl}
                     target="_blank"
                     rel="noreferrer"
                     className="text-muted-foreground hover:text-foreground transition-colors"

@@ -43,7 +43,7 @@ export default function AdminSettingsLayout() {
               }
             >
               <Icon className="h-4 w-4" />
-              {key === 'whiteLabel' ? 'Personalização (White-Label)' : t(`navigation.${key}`)}
+              {key === 'whiteLabel' ? 'Configurações Premium' : t(`navigation.${key}`)}
             </NavLink>
           ))}
         </nav>

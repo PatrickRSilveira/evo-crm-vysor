@@ -29,6 +29,11 @@ export interface GlobalConfig {
   appLogoUrl?: string;
   appPrimaryColor?: string;
   companyName?: string;
+  appLogoWidth?: string;
+  appLogoHeight?: string;
+  sidebarCopyrightText?: string;
+  supportLink?: string;
+  docsLink?: string;
 }
 
 interface GlobalConfigContextValue extends GlobalConfig {

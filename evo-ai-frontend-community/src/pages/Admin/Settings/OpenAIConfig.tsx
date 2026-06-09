@@ -12,6 +12,11 @@ import {
   CardTitle,
   Switch,
   Textarea,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@evoapi/design-system';
 import { toast } from 'sonner';
 import { Loader2, Lock, LockOpen, X } from 'lucide-react';
@@ -59,6 +64,16 @@ const DEFAULTS: OpenAIFormData = {
 };
 
 const SECRET_FIELDS = ['OPENAI_API_SECRET'];
+
+const AI_PROVIDERS = [
+  { id: 'openai', name: 'OpenAI', url: 'https://api.openai.com/v1', defaultModel: 'gpt-4o' },
+  { id: 'openrouter', name: 'OpenRouter', url: 'https://openrouter.ai/api/v1', defaultModel: 'moonshotai/kimi-k2.6:free' },
+  { id: 'groq', name: 'Groq', url: 'https://api.groq.com/openai/v1', defaultModel: 'llama3-70b-8192' },
+  { id: 'together', name: 'Together AI', url: 'https://api.together.xyz/v1', defaultModel: 'meta-llama/Llama-3-70b-chat-hf' },
+  { id: 'deepseek', name: 'DeepSeek', url: 'https://api.deepseek.com/v1', defaultModel: 'deepseek-chat' },
+  { id: 'moonshot', name: 'Moonshot AI', url: 'https://api.moonshot.cn/v1', defaultModel: 'moonshot-v1-8k' },
+  { id: 'custom', name: 'Personalizado', url: '', defaultModel: '' },
+];
 
 const PROMPT_FIELDS = [
   'OPENAI_PROMPT_REPLY',
@@ -109,6 +124,7 @@ export default function OpenAIConfig() {
     reset,
     setValue,
     control,
+    watch,
     formState: { errors },
   } = useForm<OpenAIFormData>({
     resolver: zodResolver(openaiSchema),
@@ -246,6 +262,43 @@ export default function OpenAIConfig() {
             <CardTitle className="text-base">{t('openai.connection.cardTitle')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-5">
+            <div className="space-y-2">
+              <Label>Provedor de IA (Atalho)</Label>
+              <Select 
+                value={
+                  AI_PROVIDERS.find(p => p.url !== '' && watch('OPENAI_API_URL')?.includes(p.url))?.id || 'custom'
+                } 
+                onValueChange={(val) => {
+                  if (val === 'custom') {
+                    setValue('OPENAI_API_URL', '');
+                    setValue('OPENAI_MODEL', '');
+                  } else {
+                    const provider = AI_PROVIDERS.find(p => p.id === val);
+                    if (provider) {
+                      setValue('OPENAI_API_URL', provider.url, { shouldValidate: true, shouldDirty: true });
+                      if (provider.defaultModel) {
+                        setValue('OPENAI_MODEL', provider.defaultModel, { shouldValidate: true, shouldDirty: true });
+                      }
+                    }
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um provedor..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {AI_PROVIDERS.map((provider) => (
+                    <SelectItem key={provider.id} value={provider.id}>
+                      {provider.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Selecione o provedor para preencher a URL base e sugerir um modelo automaticamente.
+              </p>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="OPENAI_API_URL">{t('openai.connection.fields.apiUrl')}</Label>
               <Input
