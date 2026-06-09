@@ -305,9 +305,17 @@ def extract_text_from_message(message: Dict[str, Any]) -> str:
         return ""
 
     for part in message["parts"]:
+        # Standard A2A spec: {"type": "text", "text": "hello"}
         if part.get("type") == "text" and "text" in part:
             return part["text"]
-
+        # Fallback 1: {"text": "hello"} without type
+        elif "text" in part and isinstance(part["text"], str):
+            return part["text"]
+        # Fallback 2: {"type": "text", "content": "hello"}
+        elif part.get("type") == "text" and "content" in part:
+            return part["content"]
+            
+    logger.warning(f"Could not extract text from parts. Raw message: {message}")
     return ""
 
 
