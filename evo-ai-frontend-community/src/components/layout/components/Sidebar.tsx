@@ -44,7 +44,7 @@ export default function Sidebar({
   // Tracks previous activeSubmenu to distinguish "newly opened" from "switched between submenus"
   const prevActiveSubmenuRef = useRef<MenuItemType | null>(null);
 
-  const companyName = globalConfig?.COMPANY_NAME || t('sidebar.footer.brand');
+  const companyName = globalConfig?.companyName || t('sidebar.footer.brand');
   const supportWhatsappUrl = 'https://api.whatsapp.com/send/?phone=553196219989&text=Ol%C3%A1%21+Preciso+de+suporte.&type=phone_number&app_absent=0';
 
   const mainMenuItems = menuItems.filter(item => item.href !== '/tutorials');
