@@ -7,7 +7,7 @@ class Api::V1::KnowledgeBases::AgentBotsController < Api::V1::BaseController
   end
 
   def create
-    @agent_bot = Current.account.agent_bots.find(params[:agent_bot_id])
+    @agent_bot = AgentBot.find(params[:agent_bot_id])
     @knowledge_base.agent_bots << @agent_bot unless @knowledge_base.agent_bots.include?(@agent_bot)
     
     render json: @agent_bot
@@ -24,6 +24,6 @@ class Api::V1::KnowledgeBases::AgentBotsController < Api::V1::BaseController
 
   def set_knowledge_base
     base_id = params[:knowledge_base_id] || params[:knowledge_basis_id]
-    @knowledge_base = Current.account.knowledge_bases.find(base_id)
+    @knowledge_base = KnowledgeBase.find(base_id)
   end
 end

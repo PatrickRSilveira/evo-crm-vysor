@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@evoapi/design-system/card';
 import { Button } from '@evoapi/design-system/button';
 
-import { FileText, Link, Bot, Plus, BookOpen, Upload } from 'lucide-react';
+import { FileText, Link, Bot, Plus, BookOpen, Upload, Trash2 } from 'lucide-react';
 
 import { KnowledgeBase, knowledgeBasesService } from '@/services/knowledgeBases';
 import { Loader2 } from 'lucide-react';
@@ -97,9 +97,24 @@ const KnowledgeBasePage = () => {
                             </p>
                           </div>
                         </div>
-                        <Button variant="outline" size="sm" onClick={() => setSelectedBase(base)}>
-                          Gerenciar
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm" onClick={() => setSelectedBase(base)}>
+                            Gerenciar
+                          </Button>
+                          <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={async () => {
+                            if (window.confirm('Tem certeza que deseja excluir esta base e todos os seus documentos?')) {
+                              try {
+                                await knowledgeBasesService.delete(base.id);
+                                toast.success('Base excluída com sucesso');
+                                fetchBases();
+                              } catch (e) {
+                                toast.error('Erro ao excluir base');
+                              }
+                            }
+                          }}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
