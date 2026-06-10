@@ -6,13 +6,15 @@ class CreateKnowledgeDocumentChunks < ActiveRecord::Migration[7.0]
     create_table :knowledge_document_chunks, id: :uuid, default: -> { "gen_random_uuid()" } do |t|
       t.references :knowledge_document, null: false, foreign_key: true, type: :uuid
       t.text :content, null: false
-      t.vector :embedding, limit: 1536 # OpenAI text-embedding-ada-002 size
 
       t.timestamps
     end
+
+    # Add the vector column via raw SQL since pgvector gem isn't installed
+    execute("ALTER TABLE knowledge_document_chunks ADD COLUMN embedding vector(1536)")
     
     # Create an index for vector similarity search
-    add_index :knowledge_document_chunks, :embedding, using: :hnsw, opclass: :vector_cosine_ops
+    execute("CREATE INDEX index_knowledge_document_chunks_on_embedding ON knowledge_document_chunks USING hnsw (embedding vector_cosine_ops)")
   end
 
   def down
