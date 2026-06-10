@@ -895,6 +895,24 @@ async def handle_message_send(
     if not push_notification_config:
         push_notification_config = params.get("pushNotificationConfig")
 
+    # Fetch agent unconditionally for use throughout the handler
+    agent = await get_agent(db, agent_id)
+    if not agent:
+        return error_response(
+            request=request,
+            code=map_status_to_error_code(status.HTTP_404_NOT_FOUND),
+            message="Agent not found",
+            status_code=status.HTTP_404_NOT_FOUND,
+            details={
+                "jsonrpc": "2.0",
+                "id": request_id,
+                "error": {
+                    "code": -32001,
+                    "message": "Agent not found",
+                },
+            }
+        )
+
     logger.info(
         f"🔔 Push notification config found: {push_notification_config is not None}"
     )
@@ -945,24 +963,6 @@ async def handle_message_send(
                         "data": {
                             "error": "pushNotificationConfig.url MUST use HTTPS for security"
                         },
-                    },
-                }
-            )
-
-        # Validate that agent supports push notifications
-        agent = await get_agent(db, agent_id)
-        if not agent:
-            return error_response(
-                request=request,
-                code=map_status_to_error_code(status.HTTP_404_NOT_FOUND),
-                message="Agent not found",
-                status_code=status.HTTP_404_NOT_FOUND,
-                details={
-                    "jsonrpc": "2.0",
-                    "id": request_id,
-                    "error": {
-                        "code": -32001,
-                        "message": "Agent not found",
                     },
                 }
             )
