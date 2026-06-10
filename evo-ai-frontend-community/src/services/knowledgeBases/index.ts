@@ -49,5 +49,10 @@ export const knowledgeBasesService = {
   unlinkAgentBot: async (baseId: number | string, agentId: number | string): Promise<any> => {
     const response = await api.delete(`/knowledge_bases/${baseId}/agent_bots/${agentId}`);
     return response.data;
+  },
+
+  deleteDocument: async (baseId: number | string, documentId: number | string): Promise<any> => {
+    const response = await api.delete(`/knowledge_bases/${baseId}/knowledge_documents/${documentId}`);
+    return response.data;
   }
 };

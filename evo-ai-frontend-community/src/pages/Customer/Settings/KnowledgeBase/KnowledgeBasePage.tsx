@@ -223,12 +223,25 @@ const KnowledgeBasePage = () => {
                     ) : (
                       <div className="space-y-3">
                         {documents.map((doc) => (
-                          <div key={doc.id} className="flex flex-col gap-1 p-3 border rounded-md">
+                          <div key={doc.id} className="flex flex-col gap-1 p-3 border rounded-md relative group">
                             <div className="flex items-center gap-2">
                               {doc.content_type === 'url' ? <Link className="h-4 w-4 text-primary" /> : <FileText className="h-4 w-4 text-primary" />}
                               <span className="font-medium text-sm truncate" title={doc.title}>{doc.title}</span>
                             </div>
                             <span className="text-xs text-muted-foreground ml-6 truncate" title={doc.file_url}>{doc.file_url}</span>
+                            <Button variant="ghost" size="sm" className="ml-auto text-red-500 hover:text-red-700 hover:bg-red-50 absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={async () => {
+                              if (window.confirm('Excluir este documento da base? Ele será removido do aprendizado da IA.')) {
+                                try {
+                                  await knowledgeBasesService.deleteDocument(selectedBase.id, doc.id);
+                                  toast.success('Documento excluído!');
+                                  fetchBaseDetails(selectedBase.id);
+                                } catch (e) {
+                                  toast.error('Erro ao excluir documento');
+                                }
+                              }
+                            }}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
                         ))}
                       </div>
