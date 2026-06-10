@@ -75,7 +75,8 @@ module BotRuntime
         contactId: contact.id,
         contactName: contact.name,
         inboxId: @conversation.inbox.id,
-        contact: build_contact_data(contact)
+        contact: build_contact_data(contact),
+        has_audio: @message.attachments.present? && @message.attachments.any? { |a| a.file_type == 'audio' }
       }
     end
 
