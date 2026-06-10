@@ -1,6 +1,5 @@
-class Api::V1::KnowledgeIngestController < Api::V1::BaseController
   def file
-    processor_url = ENV.fetch('AI_PROCESSOR_URL', 'http://evo-processor:8000')
+    processor_url = ENV.fetch('AI_PROCESSOR_URL', 'http://evo_processor:8000')
 
     if params[:file].blank?
       return render json: { error: 'Arquivo é obrigatório' }, status: :bad_request
@@ -33,7 +32,7 @@ class Api::V1::KnowledgeIngestController < Api::V1::BaseController
   end
 
   def url
-    processor_url = ENV.fetch('AI_PROCESSOR_URL', 'http://evo-processor:8000')
+    processor_url = ENV.fetch('AI_PROCESSOR_URL', 'http://evo_processor:8000')
 
     begin
       response = HTTParty.post(
