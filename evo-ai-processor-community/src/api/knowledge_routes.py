@@ -41,7 +41,7 @@ async def ingest_file(
     """
     # Verify knowledge base belongs to account
     kb = await db.fetch_one(
-        "SELECT id FROM knowledge_bases WHERE id = $1",
+        "SELECT id FROM knowledge_bases WHERE id = $1::uuid",
         knowledge_base_id
     )
     if not kb:
@@ -65,7 +65,7 @@ async def ingest_file(
 
     # Save the document metadata
     doc_id_row = await db.fetch_one(
-        "INSERT INTO knowledge_documents (knowledge_base_id, title, file_url, content_type, created_at, updated_at) VALUES ($1, $2, $3, $4, NOW(), NOW()) RETURNING id",
+        "INSERT INTO knowledge_documents (knowledge_base_id, title, file_url, content_type, created_at, updated_at) VALUES ($1::uuid, $2, $3, $4, NOW(), NOW()) RETURNING id",
         knowledge_base_id, title, file.filename, file.content_type
     )
     document_id = doc_id_row["id"]
@@ -92,7 +92,7 @@ async def ingest_url(
     """
     # Verify knowledge base exists
     kb = await db.fetch_one(
-        "SELECT id FROM knowledge_bases WHERE id = $1",
+        "SELECT id FROM knowledge_bases WHERE id = $1::uuid",
         req.knowledge_base_id
     )
     if not kb:
@@ -105,7 +105,7 @@ async def ingest_url(
         raise HTTPException(status_code=400, detail=str(e))
 
     doc_id_row = await db.fetch_one(
-        "INSERT INTO knowledge_documents (knowledge_base_id, title, file_url, content_type, created_at, updated_at) VALUES ($1, $2, $3, $4, NOW(), NOW()) RETURNING id",
+        "INSERT INTO knowledge_documents (knowledge_base_id, title, file_url, content_type, created_at, updated_at) VALUES ($1::uuid, $2, $3, $4, NOW(), NOW()) RETURNING id",
         req.knowledge_base_id, req.title, req.url, "url"
     )
     document_id = doc_id_row["id"]
