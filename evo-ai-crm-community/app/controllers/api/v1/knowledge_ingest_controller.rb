@@ -1,3 +1,4 @@
+class Api::V1::KnowledgeIngestController < Api::V1::BaseController
   def file
     processor_url = ENV.fetch('AI_PROCESSOR_URL', 'http://evo_processor:8000')
 
