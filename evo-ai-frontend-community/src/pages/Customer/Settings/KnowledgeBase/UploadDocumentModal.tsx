@@ -67,8 +67,9 @@ export const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
       onSuccess();
       onClose();
       resetForm();
-    } catch (error) {
-      toast.error('Erro ao enviar documento. Verifique o formato ou tente novamente.');
+    } catch (err: any) {
+      console.error('Upload error:', err);
+      toast.error(err?.response?.data?.error || 'Erro ao enviar documento. Verifique o formato ou tente novamente.');
     } finally {
       setIsLoading(false);
     }
