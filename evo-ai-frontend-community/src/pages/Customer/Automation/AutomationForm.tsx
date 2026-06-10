@@ -149,7 +149,9 @@ export default function AutomationForm({ mode }: Props) {
           </TabsContent>
         </Tabs>
       ) : (
-        renderForm()
+        <div className="flex-1 min-h-0 overflow-y-auto pt-4 pb-12">
+          {renderForm()}
+        </div>
       )}
     </div>
     </FormProvider>
