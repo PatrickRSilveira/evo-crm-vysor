@@ -1110,7 +1110,7 @@ export default function PipelineKanban() {
             <div className="flex gap-6 h-full pb-2 w-max min-w-full">
               {/* Stage Columns */}
               {stages.map((stage: PipelineStage) => (
-                <div key={stage.id} className="w-80 flex-shrink-0">
+                <div key={stage.id} className="min-w-[320px] w-[320px] max-w-[320px] flex-shrink-0">
                   <div className="bg-background rounded-xl shadow-sm border border-border h-full flex flex-col">
                     {/* Stage Header */}
                     <div

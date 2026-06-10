@@ -10,7 +10,7 @@ class Api::V1::KnowledgeIngestController < Api::V1::BaseController
     begin
       response = RestClient::Request.execute(
         method: :post,
-        url: "#{processor_url}/knowledge/ingest/file",
+        url: "#{processor_url}/api/v1/knowledge/ingest/file",
         headers: {
           'Authorization' => request.headers['Authorization']
         },
@@ -37,7 +37,7 @@ class Api::V1::KnowledgeIngestController < Api::V1::BaseController
 
     begin
       response = HTTParty.post(
-        "#{processor_url}/knowledge/ingest/url",
+        "#{processor_url}/api/v1/knowledge/ingest/url",
         headers: {
           'Authorization' => request.headers['Authorization'],
           'Content-Type' => 'application/json'
