@@ -243,6 +243,11 @@ Rails.application.routes.draw do
         resources :agent_bots, controller: 'knowledge_bases/agent_bots', only: [:index, :create, :destroy]
       end
 
+      namespace :knowledge do
+        post 'ingest/file', to: '/api/v1/knowledge_ingest#file'
+        post 'ingest/url', to: '/api/v1/knowledge_ingest#url'
+      end
+
       # Product Catalog (EVO-1109)
       resources :products, only: [:index, :create, :show, :update, :destroy], controller: 'products' do
         resources :variants, controller: 'products/variants', only: [:index, :create, :update, :destroy]

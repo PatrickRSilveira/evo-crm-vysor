@@ -6,7 +6,7 @@ import { Label } from '@evoapi/design-system/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@evoapi/design-system/tabs';
 import { toast } from 'sonner';
 import { Upload, Link as LinkIcon } from 'lucide-react';
-import { agentProcessorApi } from '@/services/core/agentProcessorApi';
+import api from '@/services/core/api';
 
 interface UploadDocumentModalProps {
   isOpen: boolean;
@@ -48,7 +48,7 @@ export const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
         formData.append('title', title);
         formData.append('file', file);
 
-        await agentProcessorApi.post('/knowledge/ingest/file', formData, {
+        await api.post('/knowledge/ingest/file', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
@@ -60,7 +60,7 @@ export const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
           return;
         }
 
-        await agentProcessorApi.post('/knowledge/ingest/url', {
+        await api.post('/knowledge/ingest/url', {
           knowledge_base_id: knowledgeBaseId,
           title,
           url
