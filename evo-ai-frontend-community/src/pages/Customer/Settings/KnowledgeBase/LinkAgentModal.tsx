@@ -49,7 +49,7 @@ export const LinkAgentModal: React.FC<LinkAgentModalProps> = ({
 
     setIsLoading(true);
     try {
-      await api.post(`/api/v1/knowledge_bases/${knowledgeBaseId}/agent_bots`, {
+      await api.post(`/knowledge_bases/${knowledgeBaseId}/agent_bots`, {
         agent_bot_id: selectedAgentId
       });
       toast.success('Agente vinculado com sucesso!');
