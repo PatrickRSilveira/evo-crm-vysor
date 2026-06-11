@@ -3,7 +3,7 @@ import api from '../core/api';
 export interface ProactiveCampaign {
   id: string;
   name: string;
-  trigger_type: 'LABEL_ADDED' | 'PIPELINE_STAGE_ENTERED' | 'SCHEDULED_DATE';
+  trigger_type: 'LABEL_ADDED' | 'PIPELINE_STAGE_ENTERED' | 'SCHEDULED_DATE' | 'CONTACT_CREATED' | 'CONVERSATION_OPENED' | 'CONVERSATION_RESOLVED';
   trigger_target: string;
   delay_hours: number;
   agent_id?: number;
