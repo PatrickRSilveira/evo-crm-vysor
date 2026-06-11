@@ -20,7 +20,7 @@ def create_text_to_speech_tool(config: Dict[str, Any]) -> FunctionTool:
 
     async def text_to_speech(
         text: str,
-        tool_context: Optional["ToolContext"] = None,
+        tool_context: Optional[ToolContext] = None,
     ):
         """Generates speech from text using the configured TTS provider and stores it in artifacts."""
         try:
@@ -76,10 +76,12 @@ def create_text_to_speech_tool(config: Dict[str, Any]) -> FunctionTool:
                 "error": f"Text-to-speech error ({provider_name}): {str(e)}",
             }
 
-    text_to_speech.__doc__ = f"""Generate speech from text using {provider_name}.
+    text_to_speech.__name__ = "text_to_speech"
+    text_to_speech.__doc__ = f"""Generate speech from text using {provider_name}. 
+    CRITICAL: You MUST use this tool to answer if the user requires audio. DO NOT answer with text alone.
     
     Args:
-        text: The text to generate speech from
+        text: The exact text of your response to generate speech from.
     """
 
     return FunctionTool(func=text_to_speech)
