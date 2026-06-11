@@ -84,4 +84,4 @@ def create_text_to_speech_tool(config: Dict[str, Any]) -> FunctionTool:
         tool_context: The tool context containing session information
     """
 
-    return text_to_speech
+    return FunctionTool(func=text_to_speech)
