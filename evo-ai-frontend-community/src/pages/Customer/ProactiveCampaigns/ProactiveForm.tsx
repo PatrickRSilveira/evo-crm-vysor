@@ -4,15 +4,16 @@ import { Save, ArrowLeft, UploadCloud, MessageSquare, Clock, Target, Bot } from 
 import { useNavigate, useParams } from 'react-router-dom';
 import { proactiveService, ProactiveCampaign } from '@/services/proactive/proactiveService';
 import { labelsService } from '@/services/contacts/labelsService';
-import AgentsService from '@/services/channels/agentsService';
-import { AgentChannel } from '@/types/channels/inbox';
+import { listAgents } from '@/services/agents/agentService';
+import { Agent } from '@/types/agents';
 import { Label as ContactLabel } from '@/types/settings';
+
 export default function ProactiveForm() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditing = !!id;
 
-  const [agents, setAgents] = useState<AgentChannel[]>([]);
+  const [agents, setAgents] = useState<Agent[]>([]);
   const [labels, setLabels] = useState<ContactLabel[]>([]);
 
   const [loading, setLoading] = useState(false);
@@ -36,10 +37,10 @@ export default function ProactiveForm() {
   const fetchOptions = async () => {
     try {
       const [agentsData, labelsRes] = await Promise.all([
-        AgentsService.getAll(),
+        listAgents(1, 100),
         labelsService.getLabels({ per_page: 100 })
       ]);
-      setAgents(agentsData);
+      setAgents(agentsData.data || []);
       setLabels(labelsRes.data || []);
     } catch (e) {
       console.error('Failed to fetch options', e);
@@ -197,7 +198,7 @@ export default function ProactiveForm() {
             </Label>
             <Select 
               value={formData.agent_id ? formData.agent_id.toString() : ''} 
-              onValueChange={(val: string) => setFormData({...formData, agent_id: parseInt(val)})}
+              onValueChange={(val: string) => setFormData({...formData, agent_id: val})}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o agente" />
