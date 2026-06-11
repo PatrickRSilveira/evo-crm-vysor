@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Button, Input, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@evoapi/design-system';
 import { Save, ArrowLeft, UploadCloud, MessageSquare, Clock, Target, Bot } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';

@@ -1,12 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Input, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Badge } from '@evoapi/design-system';
 import { Plus, Edit2, Trash2, Copy, Play, Pause, Search } from 'lucide-react';
-import { useLanguage } from '@/hooks/useLanguage';
 import { proactiveService, ProactiveCampaign } from '@/services/proactive/proactiveService';
 import { useNavigate } from 'react-router-dom';
 
 export default function ProactiveList() {
-  const { t } = useLanguage('marketing');
   const navigate = useNavigate();
   const [campaigns, setCampaigns] = useState<ProactiveCampaign[]>([]);
   const [loading, setLoading] = useState(true);
