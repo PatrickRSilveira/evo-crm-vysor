@@ -44,10 +44,35 @@ class OpenRouterProvider(TTSProvider):
 
             content_type = response.headers.get("content-type", "unknown")
             data = response.content
-            header_hex = data[:16].hex() if len(data) >= 16 else data.hex()
-            logger.info(
-                f"[OpenRouter TTS] Response: content-type={content_type}, "
-                f"size={len(data)} bytes, header={header_hex}"
-            )
-
+            
+            # Use print to bypass logger filtering
+            print(f"[OpenRouter TTS] content-type={content_type}, size={len(data)} bytes")
+            
+            if "application/json" in content_type.lower():
+                import json
+                import base64
+                try:
+                    json_data = response.json()
+                    print(f"[OpenRouter TTS] JSON Payload: {str(json_data)[:200]}")
+                    
+                    if "error" in json_data:
+                        raise Exception(f"OpenRouter returned error: {json_data['error']}")
+                    
+                    # Sometimes OpenRouter returns base64 inside "audio" or "data"
+                    if "audio" in json_data:
+                        return base64.b64decode(json_data["audio"])
+                    elif "data" in json_data and isinstance(json_data["data"], str):
+                        return base64.b64decode(json_data["data"])
+                    elif "data" in json_data and isinstance(json_data["data"], list) and len(json_data["data"]) > 0:
+                        # OpenAI style JSON wrapper (rare for speech, but possible)
+                        first_item = json_data["data"][0]
+                        if isinstance(first_item, dict) and "b64_json" in first_item:
+                            return base64.b64decode(first_item["b64_json"])
+                    
+                    # If we can't find base64, raise an error so we don't pass JSON to ffmpeg
+                    raise Exception(f"OpenRouter returned JSON but no recognized audio payload. Keys: {list(json_data.keys())}")
+                except Exception as e:
+                    print(f"[OpenRouter TTS] JSON Parse Error: {e}")
+                    raise Exception(f"Failed to parse OpenRouter JSON: {e}")
+            
             return data
