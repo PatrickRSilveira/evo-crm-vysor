@@ -161,7 +161,7 @@ func (d *dispatchEngineImpl) sendAudioPart(ctx context.Context, postbackURL stri
 	writer := multipart.NewWriter(body)
 
 	// Add the file part
-	part, err := writer.CreateFormFile("attachments[]", "audio.mp3")
+	part, err := writer.CreateFormFile("attachments[]", "audio.ogg")
 	if err != nil {
 		return fmt.Errorf("create form file: %w", err)
 	}
