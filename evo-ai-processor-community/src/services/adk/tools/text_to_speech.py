@@ -30,12 +30,9 @@ def _convert_to_ogg_opus(audio_bytes: bytes) -> bytes:
         result = subprocess.run(
             [
                 "ffmpeg", "-y",
+                "-f", "mp3",
                 "-i", tmp_in_path,
                 "-c:a", "libopus",
-                "-b:a", "32k",
-                "-ar", "48000",
-                "-ac", "1",
-                "-application", "voip",
                 "-vn",
                 tmp_out_path,
             ],
