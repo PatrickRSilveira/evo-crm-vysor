@@ -28,6 +28,20 @@ class OpenRouterProvider(TTSProvider):
                 "voice": voice_id,
                 "model": model_name,
             }
+            
+            # Allow passing language parameter for models like Kokoro
+            language = config.get("language") or config.get("lang")
+            
+            # Default to Portuguese since the assistant mostly speaks Portuguese
+            if not language:
+                language = "pt"
+                
+            if language:
+                json_payload["language"] = language
+            # OpenRouter kokoro sometimes uses 'lang' inside 'extra_body' or directly
+            # We'll pass it both ways just in case
+            if language:
+                json_payload["lang"] = language
 
             response = await client.post(
                 api_url,
