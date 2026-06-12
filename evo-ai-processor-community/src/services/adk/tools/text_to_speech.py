@@ -36,6 +36,7 @@ def _convert_to_ogg_opus(audio_bytes: bytes) -> bytes:
                 "-ar", "48000",
                 "-ac", "1",
                 "-application", "voip",
+                "-vn",
                 tmp_out_path,
             ],
             capture_output=True,
@@ -51,11 +52,14 @@ def _convert_to_ogg_opus(audio_bytes: bytes) -> bytes:
             )
             return converted
         else:
-            stderr_snippet = result.stderr[:200] if result.stderr else b"(no stderr)"
+            # Log the FULL stderr to actually see the error
+            stderr_full = result.stderr.decode("utf-8", errors="replace") if result.stderr else "(no stderr)"
+            stdout_full = result.stdout.decode("utf-8", errors="replace") if result.stdout else "(no stdout)"
             logger.warning(
-                f"[TTS] ffmpeg conversion failed (rc={result.returncode}): "
-                f"{stderr_snippet}"
+                f"[TTS] ffmpeg conversion failed (rc={result.returncode}). "
+                f"STDERR: {stderr_full[-500:]}"
             )
+            logger.warning(f"[TTS] ffmpeg STDOUT: {stdout_full[-200:]}")
             return audio_bytes
 
     except FileNotFoundError:

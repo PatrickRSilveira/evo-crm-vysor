@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     gnupg \
     ffmpeg \
+    libopus0 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
