@@ -68,7 +68,7 @@ func (d *dispatchEngineImpl) Dispatch(
 ) error {
 	// If audio is provided, bypass segmentation and send a single audio part
 	if len(audio) > 0 {
-		return d.sendAudioPart(ctx, postbackURL, audio)
+		return d.sendAudioPart(ctx, postbackURL, audio, content)
 	}
 
 	parts := segmentContent(content, cfg)
@@ -156,7 +156,7 @@ func (d *dispatchEngineImpl) sendPart(ctx context.Context, postbackURL, content 
 }
 
 // sendAudioPart sends an audio payload as multipart/form-data.
-func (d *dispatchEngineImpl) sendAudioPart(ctx context.Context, postbackURL string, audio []byte) error {
+func (d *dispatchEngineImpl) sendAudioPart(ctx context.Context, postbackURL string, audio []byte, content string) error {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 
@@ -173,7 +173,7 @@ func (d *dispatchEngineImpl) sendAudioPart(ctx context.Context, postbackURL stri
 	// Chatwoot requires message_type and content_type?
 	// It's usually fine just to send attachments[] if it's an AgentBot postback,
 	// but let's add content just in case.
-	_ = writer.WriteField("content", "")
+	_ = writer.WriteField("content", content)
 	_ = writer.WriteField("message_type", "outgoing")
 
 	if err := writer.Close(); err != nil {
