@@ -6,7 +6,7 @@ class AgentBots::MessageCreator
   end
 
   def create_bot_reply(content, conversation, force: false, content_type: 'text', content_attributes: nil, attachments: nil)
-    return if content.blank?
+    return if content.blank? && attachments.blank?
 
     # If force is true, skip eligibility check (e.g., for final response after transfer)
     unless force
