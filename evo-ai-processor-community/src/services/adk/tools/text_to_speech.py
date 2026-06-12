@@ -44,10 +44,10 @@ def create_text_to_speech_tool(config: Dict[str, Any]) -> FunctionTool:
             logger.info(f"Received audio response: {len(audio_bytes)} bytes")
 
             # Generate unique filename
-            filename = f"speech_{uuid.uuid4().hex[:8]}.mp3"
+            filename = f"speech_{uuid.uuid4().hex[:8]}.ogg"
 
             # Create Part and save to artifacts
-            audio_blob = types.Blob(mime_type="audio/mpeg", data=audio_bytes)
+            audio_blob = types.Blob(mime_type="audio/ogg", data=audio_bytes)
             audio_part = types.Part(inline_data=audio_blob)
             version = await tool_context.save_artifact(filename, audio_part)
 

@@ -1123,7 +1123,7 @@ async def handle_message_send(
                                         artifacts.append({
                                             "artifactId": str(uuid.uuid4()),
                                             "parts": [{
-                                                "type": "audio",
+                                                "type": "file",
                                                 "url": url,
                                                 "mimeType": mime_type
                                             }]
@@ -1139,7 +1139,7 @@ async def handle_message_send(
             for part in art.get("parts", [])
         )
         
-        tts_config = (agent.config or {}).get("integrations", {}).get("tts") or (agent.config or {}).get("integrations", {}).get("elevenlabs")
+        tts_config = (actual_agent.config or {}).get("integrations", {}).get("tts") or (actual_agent.config or {}).get("integrations", {}).get("elevenlabs")
         if not has_audio_artifact and tts_config and tts_config.get("apiKey"):
             respond_in_audio = tts_config.get("respondInAudio", "when_client_asks")
             metadata = params.get("metadata", {})
@@ -1190,7 +1190,7 @@ async def handle_message_send(
                         artifacts.append({
                             "artifactId": str(uuid.uuid4()),
                             "parts": [{
-                                "type": "audio",
+                                "type": "file",
                                 "url": url,
                                 "mimeType": mime_type
                             }]

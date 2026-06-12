@@ -27,7 +27,7 @@ class OpenRouterProvider(TTSProvider):
                 "input": text,
                 "voice": voice_id,
                 "model": model_name,
-                "response_format": "mp3"
+                "response_format": "opus"
             }
 
             response = await client.post(

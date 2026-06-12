@@ -106,13 +106,24 @@ func (a *aiAdapter) Call(ctx context.Context, req *model.A2ARequest) (*model.Nor
 
 	content := extractResponseText(&a2aResp)
 
+	// Injected Kokoro TTS logic
+	audioPayload, err := generateAudioIfRequested(ctx, a.client, a.timeoutSecs, req, content)
+	if err != nil {
+		slog.Error("pipeline.ai.tts.failed", "error", err)
+		// Fallback to text
+	}
+
 	slog.Info("pipeline.ai.http.completed",
 		"contact_id", req.ContactID,
 		"conversation_id", req.ConversationID,
 		"duration_ms", time.Since(start).Milliseconds(),
+		"generated_audio", audioPayload != nil,
 	)
 
-	return &model.NormalizedResponse{Content: content}, nil
+	return &model.NormalizedResponse{
+		Content: content,
+		Audio:   audioPayload,
+	}, nil
 }
 
 // extractResponseText extracts the text content from the A2A JSON-RPC response.
@@ -148,4 +159,73 @@ func nonNilMetadata(m map[string]any) map[string]any {
 		return map[string]any{}
 	}
 	return m
+}
+
+// generateAudioIfRequested checks if the incoming message was audio, and if so,
+// uses OpenRouter Kokoro TTS to generate audio for the AI's response.
+func generateAudioIfRequested(ctx context.Context, client *http.Client, timeoutSecs int, req *model.A2ARequest, content string) ([]byte, error) {
+	if content == "" {
+		return nil, nil
+	}
+
+	// Determine if the incoming message was marked as having audio
+	isAudio := false
+	if req.Metadata != nil {
+		if hasAudio, ok := req.Metadata["has_audio"].(bool); ok && hasAudio {
+			isAudio = true
+		} else if hasAudioStr, ok := req.Metadata["has_audio"].(string); ok && (hasAudioStr == "true" || hasAudioStr == "1") {
+			isAudio = true
+		}
+	}
+
+	// Alternatively, we could check for a specific keyword or flag.
+	// For now, if it's not detected as audio, return nil.
+	if !isAudio {
+		return nil, nil
+	}
+
+	slog.Info("pipeline.ai.tts.started", "contact_id", req.ContactID, "conversation_id", req.ConversationID)
+
+	// Hardcoded OpenRouter credentials for now based on user's n8n workflow
+	openRouterKey := "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"
+	voice := "alloy"
+
+	ttsReqBody := map[string]any{
+		"model": "hexgrad/kokoro-82m",
+		"input": content,
+		"voice": voice,
+	}
+
+	bodyBytes, err := json.Marshal(ttsReqBody)
+	if err != nil {
+		return nil, fmt.Errorf("marshal tts req: %w", err)
+	}
+
+	timeoutCtx, cancel := context.WithTimeout(ctx, time.Duration(timeoutSecs)*time.Second)
+	defer cancel()
+
+	httpReq, err := http.NewRequestWithContext(timeoutCtx, http.MethodPost, "https://openrouter.ai/api/v1/audio/speech", bytes.NewReader(bodyBytes))
+	if err != nil {
+		return nil, fmt.Errorf("new tts req: %w", err)
+	}
+
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("Authorization", "Bearer "+openRouterKey)
+
+	resp, err := client.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("do tts req: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("tts bad status: %d", resp.StatusCode)
+	}
+
+	audioData, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read tts resp: %w", err)
+	}
+
+	return audioData, nil
 }

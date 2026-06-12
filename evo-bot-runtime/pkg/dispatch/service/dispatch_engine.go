@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"mime/multipart"
 	"net/http"
 	"strings"
 	"time"
@@ -25,6 +26,7 @@ type DispatchEngine interface {
 		contactID      int64,
 		conversationID int64,
 		content        string,
+		audio          []byte,
 		cfg            model.BotConfig,
 		postbackURL    string,
 	) error
@@ -60,9 +62,15 @@ func (d *dispatchEngineImpl) Dispatch(
 	contactID      int64,
 	conversationID int64,
 	content        string,
+	audio          []byte,
 	cfg            model.BotConfig,
 	postbackURL    string,
 ) error {
+	// If audio is provided, bypass segmentation and send a single audio part
+	if len(audio) > 0 {
+		return d.sendAudioPart(ctx, postbackURL, audio)
+	}
+
 	parts := segmentContent(content, cfg)
 
 	// Prepend signature to the first part (FR-21)
@@ -146,6 +154,54 @@ func (d *dispatchEngineImpl) sendPart(ctx context.Context, postbackURL, content 
 	}
 	return nil
 }
+
+// sendAudioPart sends an audio payload as multipart/form-data.
+func (d *dispatchEngineImpl) sendAudioPart(ctx context.Context, postbackURL string, audio []byte) error {
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	// Add the file part
+	part, err := writer.CreateFormFile("attachments[]", "audio.mp3")
+	if err != nil {
+		return fmt.Errorf("create form file: %w", err)
+	}
+	_, err = io.Copy(part, bytes.NewReader(audio))
+	if err != nil {
+		return fmt.Errorf("copy audio to multipart: %w", err)
+	}
+
+	// Chatwoot requires message_type and content_type?
+	// It's usually fine just to send attachments[] if it's an AgentBot postback,
+	// but let's add content just in case.
+	_ = writer.WriteField("content", "")
+	_ = writer.WriteField("message_type", "outgoing")
+
+	if err := writer.Close(); err != nil {
+		return fmt.Errorf("close multipart writer: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, postbackURL, body)
+	if err != nil {
+		return fmt.Errorf("new audio request: %w", err)
+	}
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	if d.secret != "" {
+		req.Header.Set("X-Bot-Runtime-Secret", d.secret)
+	}
+
+	resp, err := d.client.Do(req)
+	if err != nil {
+		return fmt.Errorf("do audio post: %w", err)
+	}
+	defer resp.Body.Close()
+	_, _ = io.Copy(io.Discard, resp.Body)
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return fmt.Errorf("status: %d", resp.StatusCode)
+	}
+	return nil
+}
+
 
 // segmentContent splits content into parts of at most TextSegmentationLimit characters,
 // respecting word boundaries, then merges any part shorter than TextSegmentationMinSize

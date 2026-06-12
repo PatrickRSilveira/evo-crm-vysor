@@ -424,7 +424,7 @@ func (s *pipelineService) launchDispatchStage(
 	cfg            model.BotConfig,
 	postbackURL    string,
 ) {
-	go s.runDispatchStage(ctx, contactID, conversationID, resp.Content, cfg, postbackURL)
+	go s.runDispatchStage(ctx, contactID, conversationID, resp.Content, resp.Audio, cfg, postbackURL)
 }
 
 // runDispatchStage is the dispatch stage goroutine body. ctx is pipelineEntry.ctx — cancelled by
@@ -434,6 +434,7 @@ func (s *pipelineService) runDispatchStage(
 	contactID      int64,
 	conversationID int64,
 	content        string,
+	audio          []byte,
 	cfg            model.BotConfig,
 	postbackURL    string,
 ) {
@@ -445,7 +446,7 @@ func (s *pipelineService) runDispatchStage(
 	)
 	start := time.Now()
 
-	err := s.dispatchEng.Dispatch(ctx, contactID, conversationID, content, cfg, postbackURL)
+	err := s.dispatchEng.Dispatch(ctx, contactID, conversationID, content, audio, cfg, postbackURL)
 	if err != nil {
 		switch {
 		case errors.Is(err, brtErrors.ErrDispatchInterrupted):

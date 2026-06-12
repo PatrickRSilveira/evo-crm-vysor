@@ -63,4 +63,5 @@ type A2APart struct {
 // No JSON tags — this type never crosses a service boundary.
 type NormalizedResponse struct {
 	Content string
+	Audio   []byte
 }
