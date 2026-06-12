@@ -565,9 +565,14 @@ const AgentEditPage = () => {
             mergedIntegrations[frontendKey] = {
               ...mergedIntegrations[frontendKey],
               ...integration.config,
-              provider: integration.provider,
               connected: true, // Mark as connected since it exists in backend
             };
+            
+            // Only set provider from the DB column if the config doesn't already specify it.
+            // For TTS, DB provider is 'tts', but config.provider is 'openrouter', 'kokoro', etc.
+            if (!integration.config?.provider) {
+              mergedIntegrations[frontendKey].provider = integration.provider;
+            }
           });
 
           setIntegrations(mergedIntegrations);
