@@ -86,9 +86,10 @@ export default function Integrations() {
       if (!fetched.some(i => i.id === 'oauth_applications')) {
         fetched.push({
           id: 'oauth_applications',
-          name: t('oauthApps.title') || 'Aplicativos OAuth',
-          description: t('oauthApps.description') || 'Configure OAuth connections for Google Calendar, Sheets, etc.',
+          name: 'Aplicativos OAuth',
+          description: 'Configure aplicativos OAuth do sistema (Evo CRM como Provedor)',
           enabled: true,
+          logo: '',
         });
       }
       
