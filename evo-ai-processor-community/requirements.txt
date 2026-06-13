@@ -360,4 +360,3 @@ zipp==3.23.0
 zstandard==0.24.0
 apscheduler==3.10.4
 emoji==2.11.1
-mcp==1.1.2
