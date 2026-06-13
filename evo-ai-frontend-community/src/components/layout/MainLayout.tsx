@@ -23,6 +23,7 @@ import { usePermissions } from '@/contexts/PermissionsContext';
 import { useMenuState } from '@/hooks/useMenuState';
 import { useDashboardApps } from '@/hooks/useDashboardApps';
 import { injectDashboardAppsIntoMenu } from '@/utils/injectDashboardApps';
+import { useAppDataStore } from '@/store/appDataStore';
 import { WelcomeTourModal } from '@/components/WelcomeTourModal';
 
 interface MainLayoutProps {
@@ -47,6 +48,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
     autoLoad: true,
     loadDelay: 1000, // Defer slightly to not block initial render
   });
+
+  // Load inboxes for sidebar integration
+  const inboxes = useAppDataStore(state => state.inboxes);
 
   // Load saved sidebar state
   useEffect(() => {
@@ -74,8 +78,32 @@ export default function MainLayout({ children }: MainLayoutProps) {
       finalItems = injectDashboardAppsIntoMenu(finalItems, dashboardApps);
     }
 
+    // Inject inboxes as submenus of Conversations
+    if (inboxes && inboxes.length > 0) {
+      finalItems = finalItems.map(item => {
+        if (item.href === '/conversations') {
+          return {
+            ...item,
+            subItems: [
+              {
+                name: t('chatSidebar.allInboxes', 'Todas as Conversas'),
+                href: '/conversations',
+                icon: item.icon,
+              },
+              ...inboxes.map(inbox => ({
+                name: inbox.name,
+                href: `/conversations?inbox_id=${inbox.id}`,
+                icon: item.icon,
+              }))
+            ]
+          };
+        }
+        return item;
+      });
+    }
+
     return finalItems;
-  }, [getMenuItems, can, canAny, canAll, dashboardApps, user?.role?.key]);
+  }, [getMenuItems, can, canAny, canAll, dashboardApps, user?.role?.key, inboxes, t]);
 
   // Use the custom menu state hook
   const menuState = useMenuState(menuItems, setIsMobileMenuOpen);

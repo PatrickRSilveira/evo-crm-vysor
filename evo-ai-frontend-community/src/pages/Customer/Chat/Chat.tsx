@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { Suspense, useEffect, useState, useCallback, useRef, useMemo } from 'react';
 
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { useChatContext } from '@/contexts/chat/ChatContext';
 import { usePermissions } from '@/contexts/PermissionsContext';
@@ -70,6 +70,7 @@ const Chat = () => {
   const fetchLabels = useAppDataStore(state => state.fetchLabels);
   const { conversationId } = useParams<{ conversationId?: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const chatContext = useChatContext();
   // Explicitly type conversations to ensure TypeScript recognizes it has 'state'
   const conversations = chatContext.conversations;
@@ -163,6 +164,49 @@ const Chat = () => {
       setIsContactSidebarOpen(false);
     }
   }, [conversationId, isContactSidebarOpen]);
+
+  // 🌍 URL SYNC INBOX: Escutar mudanças no searchParams (?inbox_id=X)
+  useEffect(() => {
+    // Only run this when permissions are ready
+    if (!permissionsReady) return;
+
+    const urlInboxId = searchParams.get('inbox_id');
+    
+    // Obter todos os filtros do context, não do estado local para evitar race conditions,
+    // mas o context demora. Vamos montar a partir do getDefaultFilter ou do loadConversationFilters.
+    // Melhor: a primeira carga de filtros (montagem) já faz o handleApplyFilters.
+    // Vamos apenas escutar quando a URL muda.
+    
+    const savedFilters = loadConversationFilters() || getDefaultFilter();
+    const activeFilterArray = filters.state.activeFilters.length > 0 
+      ? filters.state.activeFilters.map(f => ({
+          attributeKey: f.attribute_key,
+          filterOperator: f.filter_operator,
+          values: Array.isArray(f.values) ? f.values.join(',') : String(f.values[0] || ''),
+          queryOperator: f.query_operator,
+          attributeModel: 'standard' as const,
+        }))
+      : savedFilters;
+
+    const currentInboxFilter = activeFilterArray.find(f => f.attributeKey === 'inbox_id');
+    const currentInboxId = currentInboxFilter ? String(currentInboxFilter.values) : null;
+
+    if (urlInboxId !== currentInboxId && !filters.state.isApplyingFilters) {
+      const newFilters = activeFilterArray.filter(f => f.attributeKey !== 'inbox_id');
+      if (urlInboxId) {
+        newFilters.push({
+          attributeKey: 'inbox_id',
+          filterOperator: 'equal_to',
+          values: urlInboxId,
+          queryOperator: 'and',
+          attributeModel: 'standard'
+        });
+      }
+      handleApplyFilters(newFilters).catch(console.error);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, permissionsReady]); // não colocar os filtros no dependecy array para não causar loop infinito
+
 
   // Load conversations on mount
   useEffect(() => {
