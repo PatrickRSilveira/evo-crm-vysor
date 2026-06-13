@@ -76,7 +76,22 @@ class AgentsService {
 
   async getAgentIntegrations(agentId: string): Promise<any[]> {
     const response = await evoaiApi.get(`/agents/${agentId}/integrations`);
-    return extractData<any[]>(response);
+    const raw = extractData<any>(response);
+    
+    if (raw && typeof raw === 'object' && raw.configs) {
+      const items: any[] = [];
+      const configs = raw.configs;
+      for (const [provider, config] of Object.entries(configs)) {
+        items.push({ provider, config: config || {} });
+      }
+      return items;
+    }
+    
+    if (Array.isArray(raw)) {
+      return raw;
+    }
+    
+    return [];
   }
 
   // AI Folders
