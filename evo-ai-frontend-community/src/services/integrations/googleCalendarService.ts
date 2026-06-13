@@ -54,7 +54,10 @@ const GoogleCalendarService = {
       const { data } = await api.get(
         `/agents/${agentId}/integrations/google-calendar/calendars`
       );
-      return Array.isArray(data.data) ? data.data : (data?.data?.calendars || []);
+      if (Array.isArray(data)) return data;
+      if (data?.calendars && Array.isArray(data.calendars)) return data.calendars;
+      if (Array.isArray(data?.data)) return data.data;
+      return data?.data?.calendars || [];
     } catch (error) {
       console.error('GoogleCalendarService.getCalendars error:', error);
       throw error;

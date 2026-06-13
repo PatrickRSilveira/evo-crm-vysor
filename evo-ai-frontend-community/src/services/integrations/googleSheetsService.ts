@@ -54,7 +54,10 @@ const GoogleSheetsService = {
       const { data } = await api.get(
         `/agents/${agentId}/integrations/google-sheets/spreadsheets`
       );
-      return data.spreadsheets || [];
+      if (Array.isArray(data)) return data;
+      if (data?.spreadsheets && Array.isArray(data.spreadsheets)) return data.spreadsheets;
+      if (Array.isArray(data?.data)) return data.data;
+      return data?.data?.spreadsheets || [];
     } catch (error) {
       console.error('GoogleSheetsService.getSpreadsheets error:', error);
       throw error;

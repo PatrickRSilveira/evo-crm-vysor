@@ -25,7 +25,7 @@ agentProcessorApi.interceptors.request.use(config => {
 agentProcessorApi.interceptors.response.use(
   response => {
     // Automatically unwrap standard SuccessResponse
-    if (response.data && response.data.status === 'success' && response.data.data !== undefined) {
+    if (response.data && (response.data.status === 'success' || response.data.success === true) && response.data.data !== undefined) {
       // Return the inner data
       response.data = response.data.data;
     }
