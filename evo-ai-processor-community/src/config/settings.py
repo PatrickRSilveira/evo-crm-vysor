@@ -47,7 +47,7 @@ class Settings(BaseSettings):
     API_URL: str = os.getenv("API_URL", "http://localhost:8000")
     
     # Evolution Configuration
-    EVOLUTION_BASE_URL: str = os.getenv("EVOLUTION_BASE_URL", "http://localhost:3000")
+    EVOLUTION_BASE_URL: str = os.getenv("EVO_AI_CRM_URL", "http://localhost:3000")
     EVO_AUTH_BASE_URL: str = os.getenv("EVO_AUTH_BASE_URL", "http://localhost:3001")
     EVO_CORE_BASE_URL: str = os.getenv("EVO_CORE_BASE_URL", "http://localhost:9001")
     
