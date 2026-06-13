@@ -519,8 +519,18 @@ class AgentBotListener < BaseListener
   def process_webhook_bot_event(agent_bot, payload)
     return if agent_bot.outgoing_url.blank?
 
+    has_attachments = false
+    
+    # Check if payload has attachments
+    if payload[:message].present?
+      has_attachments = payload[:message].attachments.present?
+    elsif payload[:attachments].present?
+      has_attachments = payload[:attachments].any?
+    end
+
     # Bot Runtime handles debounce, AI calls and dispatch externally
-    if BotRuntime::Config.enabled?
+    # Bypass it for messages with attachments since it doesn't support them yet
+    if BotRuntime::Config.enabled? && !has_attachments
       delegate_to_bot_runtime(agent_bot, payload)
       return
     end
