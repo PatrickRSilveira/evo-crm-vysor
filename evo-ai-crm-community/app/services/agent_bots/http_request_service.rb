@@ -44,7 +44,7 @@ class AgentBots::HttpRequestService
     conversation = find_conversation_from_payload
     return unless conversation
 
-    Rails.configuration.dispatcher.dispatch(Events::Types::CONVERSATION_TYPING_ON, Time.zone.now, conversation: conversation, user: nil, is_private: false)
+    Rails.configuration.dispatcher.dispatch(Events::Types::CONVERSATION_TYPING_ON, Time.zone.now, conversation: conversation, user: @agent_bot, is_private: false)
   rescue StandardError => e
     Rails.logger.error "[AgentBot HTTP] Error triggering typing on: #{e.message}"
   end
@@ -53,7 +53,7 @@ class AgentBots::HttpRequestService
     conversation = find_conversation_from_payload
     return unless conversation
 
-    Rails.configuration.dispatcher.dispatch(Events::Types::CONVERSATION_TYPING_OFF, Time.zone.now, conversation: conversation, user: nil, is_private: false)
+    Rails.configuration.dispatcher.dispatch(Events::Types::CONVERSATION_TYPING_OFF, Time.zone.now, conversation: conversation, user: @agent_bot, is_private: false)
   rescue StandardError => e
     Rails.logger.error "[AgentBot HTTP] Error triggering typing off: #{e.message}"
   end

@@ -140,6 +140,33 @@ class Whatsapp::Providers::EvolutionGoService < Whatsapp::Providers::BaseService
     false
   end
 
+  def toggle_typing_status(phone_number, typing_status)
+    status_map = {
+      Events::Types::CONVERSATION_TYPING_ON => 'composing',
+      Events::Types::CONVERSATION_RECORDING => 'recording',
+      Events::Types::CONVERSATION_TYPING_OFF => 'paused'
+    }
+
+    presence = status_map[typing_status] || 'paused'
+    clean_number = phone_number.delete('+')
+
+    body = {
+      number: clean_number,
+      presence: presence,
+      delay: 15000
+    }
+
+    response = HTTParty.post(
+      "#{api_base_path}/chat/sendPresence/#{instance_name}",
+      headers: instance_headers,
+      body: body.to_json
+    )
+
+    process_evolution_go_response(response)
+  rescue StandardError => e
+    Rails.logger.error "[Evolution Go] Error toggling typing status: #{e.message}"
+  end
+
   def api_headers
     admin_token = whatsapp_channel.provider_config['admin_token'].presence || GlobalConfigService.load('EVOLUTION_GO_ADMIN_SECRET', '').to_s.strip
     {
