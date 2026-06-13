@@ -549,8 +549,6 @@ export interface PayPalConnectionResponse {
 export interface GoogleCalendarConfig {
   provider: 'google_calendar';
   email?: string;
-  client_id?: string;
-  client_secret?: string;
   connected?: boolean;
   calendars?: GoogleCalendarItem[];
   settings?: CalendarSettings;

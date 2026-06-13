@@ -10,11 +10,11 @@ const GoogleSheetsService = {
   /**
    * Generate Google Sheets OAuth authorization URL
    */
-  async generateAuthorization(agentId: string, email?: string, clientId?: string, clientSecret?: string): Promise<GoogleSheetsOAuthResponse> {
+  async generateAuthorization(agentId: string, email?: string): Promise<GoogleSheetsOAuthResponse> {
     try {
       const { data } = await api.post(
         `/agents/${agentId}/integrations/google-sheets/authorization`,
-        { email, client_id: clientId, client_secret: clientSecret }
+        { email }
       );
       return data;
     } catch (error) {

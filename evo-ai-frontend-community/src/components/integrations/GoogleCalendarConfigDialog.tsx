@@ -69,8 +69,6 @@ const GoogleCalendarConfigDialog = ({
   const [config, setConfig] = useState<GoogleCalendarConfig>({
     provider: 'google_calendar',
     email: initialConfig?.email || '',
-    client_id: initialConfig?.client_id || '',
-    client_secret: initialConfig?.client_secret || '',
     connected: initialConfig?.connected || false,
     calendars: initialConfig?.calendars || [],
     settings: {
@@ -127,8 +125,6 @@ const GoogleCalendarConfigDialog = ({
       setConfig({
         provider: 'google_calendar',
         email: initialConfig?.email || '',
-        client_id: initialConfig?.client_id || '',
-        client_secret: initialConfig?.client_secret || '',
         connected: initialConfig?.connected || false,
         calendars: initialConfig?.calendars || [],
         settings: {
@@ -212,9 +208,7 @@ const GoogleCalendarConfigDialog = ({
     try {
       const response = await GoogleCalendarService.generateAuthorization(
         agentId,
-        config.email,
-        config.client_id,
-        config.client_secret
+        config.email
       );
 
       if (response.url) {
@@ -359,33 +353,6 @@ const GoogleCalendarConfigDialog = ({
                   placeholder="seuemail@gmail.com"
                   value={config.email}
                   onChange={(e) => setConfig({ ...config, email: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="client_id">
-                  {t('edit.integrations.googleCalendar.clientId') || 'Client ID (Opcional)'}
-                </Label>
-                <Input
-                  id="client_id"
-                  type="text"
-                  placeholder="Seu Client ID do Google Cloud"
-                  value={config.client_id || ''}
-                  onChange={(e) => setConfig({ ...config, client_id: e.target.value })}
-                />
-                <p className="text-xs text-muted-foreground mt-1">Deixe em branco para usar as credenciais globais do sistema</p>
-              </div>
-
-              <div>
-                <Label htmlFor="client_secret">
-                  {t('edit.integrations.googleCalendar.clientSecret') || 'Client Secret (Opcional)'}
-                </Label>
-                <Input
-                  id="client_secret"
-                  type="password"
-                  placeholder="Seu Client Secret do Google Cloud"
-                  value={config.client_secret || ''}
-                  onChange={(e) => setConfig({ ...config, client_secret: e.target.value })}
                 />
               </div>
 
