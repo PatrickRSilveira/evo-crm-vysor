@@ -23,8 +23,6 @@ import OAuthAppsHeader from './OAuthAppsHeader';
 import OAuthAppsTable from './OAuthAppsTable';
 import OAuthAppsPagination from './OAuthAppsPagination';
 import OAuthAppModal from './OAuthAppModal';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@radix-ui/react-tabs';
-import { CardContent } from '@evoapi/design-system';
 
 interface OAuthAppsState {
   apps: OAuthApplication[];
@@ -346,17 +344,6 @@ export default function OAuthAppsList({ onBack }: OAuthAppsListProps = {}) {
   return (
     <div className="h-full flex flex-col">
       <div className="flex-none p-4 pb-0">
-        <Tabs defaultValue="evo-apps" className="w-full">
-          <TabsList className="mb-4 border-b w-full flex gap-4">
-            <TabsTrigger value="evo-apps" className="px-4 py-2 border-b-2 data-[state=active]:border-primary data-[state=inactive]:border-transparent">
-              Aplicações OAuth (Evo CRM)
-            </TabsTrigger>
-            <TabsTrigger value="google-global" className="px-4 py-2 border-b-2 data-[state=active]:border-primary data-[state=inactive]:border-transparent">
-              Google OAuth (Global)
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="evo-apps" className="h-full flex flex-col m-0 mt-4">
         <OAuthAppsHeader
           totalCount={state.meta.pagination.total}
           selectedCount={state.selectedAppIds.length}
@@ -566,57 +553,6 @@ export default function OAuthAppsList({ onBack }: OAuthAppsListProps = {}) {
         isNew={!editingApp}
         loading={state.loading.create || state.loading.update}
       />
-          </TabsContent>
-
-          <TabsContent value="google-global" className="m-0 mt-4">
-            <Card className="max-w-2xl mx-auto p-6">
-              <h2 className="text-xl font-bold mb-2">Configuração Global - Google Calendar & Sheets</h2>
-              <p className="text-slate-500 mb-6">
-                Configure as credenciais globais do Google. Insira aqui o Client ID e Client Secret que você obteve no Google Cloud Console. 
-                Isso permitirá que todos os agentes utilizem essa configuração (caso não tenham uma específica).
-              </p>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">URLs de Redirecionamento (Copie e cole ambas no Google Cloud)</label>
-                  <div className="space-y-2">
-                    <code className="bg-slate-100 dark:bg-slate-800 p-2 rounded block w-full text-xs break-all select-all">
-                      {window.location.origin}/oauth/google-calendar/callback
-                    </code>
-                    <code className="bg-slate-100 dark:bg-slate-800 p-2 rounded block w-full text-xs break-all select-all">
-                      {window.location.origin}/oauth/google-sheets/callback
-                    </code>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Client ID (Chave Usuário)</label>
-                  <input 
-                    type="text" 
-                    className="w-full p-2 border rounded bg-background"
-                    placeholder="Ex: 792603653049-5ba8ss...apps.googleusercontent.com"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Client Secret (Chave Secreta)</label>
-                  <input 
-                    type="password" 
-                    className="w-full p-2 border rounded bg-background"
-                    placeholder="Sua chave secreta do Google"
-                  />
-                </div>
-
-                <div className="pt-4 flex justify-end">
-                  <Button onClick={() => toast.success('Configurações globais salvas com sucesso! (Simulado)')}>
-                    Salvar Configuração Global
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
     </div>
   );
 }

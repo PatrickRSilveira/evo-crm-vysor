@@ -82,6 +82,8 @@ import LeadSquaredPage from '../pages/Customer/Settings/Integrations/LeadSquared
 import HubSpotPage from '../pages/Customer/Settings/Integrations/HubSpotPage';
 import ShopifyPage from '../pages/Customer/Settings/Integrations/ShopifyPage';
 import LinearPage from '../pages/Customer/Settings/Integrations/LinearPage';
+import GoogleCalendarGlobalPage from '../pages/Customer/Settings/Integrations/GoogleCalendarGlobalPage';
+import GoogleSheetsGlobalPage from '../pages/Customer/Settings/Integrations/GoogleSheetsGlobalPage';
 import DashboardAppPage from '../pages/Customer/DashboardApp';
 // import { Overview, Conversations } from '../pages/Customer/Reports';
 // import * as Reports from '../pages/Customer/Reports';
@@ -904,6 +906,30 @@ const AppRouter = () => {
             }
           />
 
+          <Route
+            path="/settings/integrations/google_calendar_global"
+            element={
+              <PrivateRoute>
+                <CustomerRoute>
+                  <MainLayout>
+                    <GoogleCalendarGlobalPage />
+                  </MainLayout>
+                </CustomerRoute>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/settings/integrations/google_sheets_global"
+            element={
+              <PrivateRoute>
+                <CustomerRoute>
+                  <MainLayout>
+                    <GoogleSheetsGlobalPage />
+                  </MainLayout>
+                </CustomerRoute>
+              </PrivateRoute>
+            }
+          />
           <Route
             path="/settings/integrations/oauth-apps"
             element={

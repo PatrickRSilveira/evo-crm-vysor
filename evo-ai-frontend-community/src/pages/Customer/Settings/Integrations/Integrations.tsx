@@ -86,8 +86,28 @@ export default function Integrations() {
       if (!fetched.some(i => i.id === 'oauth_applications')) {
         fetched.push({
           id: 'oauth_applications',
-          name: 'Aplicativos OAuth',
-          description: 'Configure aplicativos OAuth do sistema (Evo CRM como Provedor)',
+          name: 'Aplicações OAuth (Evo CRM)',
+          description: 'Crie provedores OAuth locais para integrações de terceiros como n8n.',
+          enabled: true,
+          logo: '',
+        });
+      }
+
+      if (!fetched.some(i => i.id === 'google_calendar_global')) {
+        fetched.push({
+          id: 'google_calendar_global',
+          name: 'Google Calendar (Global)',
+          description: 'Configure as credenciais globais do Google Calendar para todos os agentes.',
+          enabled: true,
+          logo: '',
+        });
+      }
+
+      if (!fetched.some(i => i.id === 'google_sheets_global')) {
+        fetched.push({
+          id: 'google_sheets_global',
+          name: 'Google Sheets (Global)',
+          description: 'Configure as credenciais globais do Google Sheets para todos os agentes.',
           enabled: true,
           logo: '',
         });
@@ -172,6 +192,10 @@ export default function Integrations() {
       navigate(`/settings/integrations/dashboard-apps`);
     } else if (integration.id === 'oauth_applications') {
       navigate(`/settings/integrations/oauth-apps`);
+    } else if (integration.id === 'google_calendar_global') {
+      navigate(`/settings/integrations/google_calendar_global`);
+    } else if (integration.id === 'google_sheets_global') {
+      navigate(`/settings/integrations/google_sheets_global`);
     } else {
       // Generic integration configuration page
       navigate(`/settings/integrations/${integration.id}`);
