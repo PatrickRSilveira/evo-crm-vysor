@@ -204,6 +204,9 @@ const GoogleCalendarConfigDialog = ({
       return;
     }
 
+    // Open an empty tab immediately (synchronously) to bypass popup blockers
+    const authWindow = window.open('about:blank', '_blank');
+
     setIsConnecting(true);
     try {
       const response = await GoogleCalendarService.generateAuthorization(
@@ -211,11 +214,14 @@ const GoogleCalendarConfigDialog = ({
         config.email
       );
 
-      if (response.url) {
-        // Open Google OAuth in a new tab
-        window.open(response.url, '_blank');
+      if (response.url && authWindow) {
+        // Set the URL of the tab we just opened
+        authWindow.location.href = response.url;
+      } else if (authWindow) {
+        authWindow.close();
       }
     } catch (error) {
+      if (authWindow) authWindow.close();
       console.error('Error connecting to Google Calendar:', error);
       toast.error('Erro ao conectar com Google Calendar');
     } finally {

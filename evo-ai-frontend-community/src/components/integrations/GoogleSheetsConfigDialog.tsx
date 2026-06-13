@@ -109,15 +109,21 @@ const GoogleSheetsConfigDialog = ({
       return;
     }
 
+    // Open an empty tab immediately (synchronously) to bypass popup blockers
+    const authWindow = window.open('about:blank', '_blank');
+
     setIsConnecting(true);
     try {
       const response = await GoogleSheetsService.generateAuthorization(agentId, config.email);
 
-      if (response.url) {
-        // Open Google OAuth in a new tab
-        window.open(response.url, '_blank');
+      if (response.url && authWindow) {
+        // Set the URL of the tab we just opened
+        authWindow.location.href = response.url;
+      } else if (authWindow) {
+        authWindow.close();
       }
     } catch (error) {
+      if (authWindow) authWindow.close();
       console.error('Error connecting to Google Sheets:', error);
       toast.error('Erro ao conectar com Google Sheets');
     } finally {
