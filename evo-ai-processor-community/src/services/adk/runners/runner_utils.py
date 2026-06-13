@@ -301,11 +301,13 @@ class RunnerUtils:
                         filename=file_data.filename,
                         artifact=file_part,
                     )
-                    if is_audio:
-                        # Audio file - add to content parts for LLM processing
+                    
+                    is_image = self._is_image_file(file_data.content_type, file_data.filename)
+                    if is_audio or is_image:
+                        # Audio or Image file - add to content parts for LLM processing
                         file_parts.append(file_part)
                         logger.info(
-                            f"Added audio file {file_data.filename} to content parts for LLM processing"
+                            f"Added file {file_data.filename} to content parts for LLM processing"
                         )
 
                 except Exception as e:
@@ -314,6 +316,25 @@ class RunnerUtils:
                     )
 
         return file_parts, transcribed_texts
+
+    def _is_image_file(self, content_type: str, filename: str) -> bool:
+        """Check if file is an image file based on content type and extension."""
+        if not content_type and not filename:
+            return False
+
+        if content_type:
+            main_mime_type = content_type.split(";")[0].strip().lower()
+            if main_mime_type.startswith("image/"):
+                return True
+
+        if filename:
+            image_extensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".svg"]
+            filename_lower = filename.lower()
+            for ext in image_extensions:
+                if filename_lower.endswith(ext):
+                    return True
+
+        return False
 
     def _is_audio_file(self, content_type: str, filename: str) -> bool:
         """Check if file is an audio file based on content type and extension."""
