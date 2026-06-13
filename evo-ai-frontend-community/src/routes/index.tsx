@@ -30,6 +30,7 @@ import MicrosoftCallback from '@/pages/MicrosoftCallback';
 import SurveyResponse from '@/pages/Public/Survey/SurveyResponse';
 import Privacy from '@/pages/Public/Privacy';
 import Terms from '@/pages/Public/Terms';
+import DataDeletion from '@/pages/Public/DataDeletion';
 
 // Páginas customer
 import Dashboard from '@/pages/Customer/Dashboard';
@@ -168,6 +169,14 @@ const AppRouter = () => {
             element={
               <PublicRoute>
                 <Terms />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/data-deletion"
+            element={
+              <PublicRoute>
+                <DataDeletion />
               </PublicRoute>
             }
           />
