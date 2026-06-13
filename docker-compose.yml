@@ -231,6 +231,7 @@ services:
       CORE_SERVICE_URL: http://evo-core:5555/api/v1
     volumes:
       - processor_logs:/app/logs
+      - ./olivia-mcp-server:/olivia-mcp-server
     depends_on:
       postgres:
         condition: service_healthy
