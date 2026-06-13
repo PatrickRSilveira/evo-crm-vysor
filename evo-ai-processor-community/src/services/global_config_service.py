@@ -116,7 +116,8 @@ class GlobalConfigService:
                 response = await client.get(url, headers=headers)
 
                 if response.status_code == 200:
-                    data = response.json()
+                    response_data = response.json()
+                    data = response_data.get("data", response_data)
                     client_id = data.get("google_calendar_client_id")
                     client_secret = data.get("google_calendar_client_secret")
                     redirect_uri = data.get("google_calendar_redirect_uri")
@@ -184,7 +185,8 @@ class GlobalConfigService:
                 response = await client.get(url, headers=headers)
 
                 if response.status_code == 200:
-                    data = response.json()
+                    response_data = response.json()
+                    data = response_data.get("data", response_data)
                     client_id = data.get("google_sheets_client_id")
                     client_secret = data.get("google_sheets_client_secret")
                     redirect_uri = data.get("google_sheets_redirect_uri")
