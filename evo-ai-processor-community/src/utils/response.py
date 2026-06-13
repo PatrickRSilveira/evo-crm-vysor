@@ -158,9 +158,9 @@ def map_status_to_error_code(status_code: int) -> str:
 
 
 def error_response(
-    request: Request,
-    code: str,
-    message: str,
+    request: Optional[Any] = None,
+    code: str = "INTERNAL_ERROR",
+    message: str = "An error occurred",
     details: Optional[Any] = None,
     status_code: int = 400
 ) -> JSONResponse:
@@ -168,7 +168,7 @@ def error_response(
     Create a standardized error response
 
     Args:
-        request: FastAPI request object
+        request: FastAPI request object (optional)
         code: Error code (e.g., "VALIDATION_ERROR", "NOT_FOUND")
         message: Human-readable error message
         details: Optional additional error details
@@ -184,13 +184,22 @@ def error_response(
         details=details
     )
     
+    # Safely extract path and method
+    path_str = "unknown"
+    method_str = "unknown"
+    
+    if request is not None and hasattr(request, "url") and hasattr(request.url, "path"):
+        path_str = str(request.url.path)
+    if request is not None and hasattr(request, "method"):
+        method_str = request.method
+    
     response = ErrorResponseData(
         success=False,
         error=error_info,
         meta=MetaInfoError(
             timestamp=datetime.now(timezone.utc).isoformat(),
-            path=str(request.url.path),
-            method=request.method
+            path=path_str,
+            method=method_str
         )
     )
         
