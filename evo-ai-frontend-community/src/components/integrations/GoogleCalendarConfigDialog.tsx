@@ -349,6 +349,14 @@ const GoogleCalendarConfigDialog = ({
             </div>
 
             <div className="space-y-4">
+              <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-md text-sm border border-slate-200 dark:border-slate-700">
+                <p className="font-medium mb-1">URL de Redirecionamento Autorizado:</p>
+                <code className="text-xs break-all block text-muted-foreground select-all">
+                  {GoogleCalendarService.getOAuthCallbackUrl()}
+                </code>
+                <p className="text-xs mt-1 text-muted-foreground">Copie esta URL e cole no Google Cloud Console.</p>
+              </div>
+
               <div>
                 <Label htmlFor="email">
                   {t('edit.integrations.googleCalendar.email') || 'E-mail do Google'}

@@ -578,10 +578,13 @@ export default function OAuthAppsList({ onBack }: OAuthAppsListProps = {}) {
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">URL de Redirecionamento (Copie e cole no Google Cloud)</label>
-                  <div className="flex items-center gap-2">
-                    <code className="bg-slate-100 dark:bg-slate-800 p-2 rounded block w-full">
-                      {window.location.origin}/api/v1/integrations/google_calendar/callback
+                  <label className="block text-sm font-medium mb-1">URLs de Redirecionamento (Copie e cole ambas no Google Cloud)</label>
+                  <div className="space-y-2">
+                    <code className="bg-slate-100 dark:bg-slate-800 p-2 rounded block w-full text-xs break-all select-all">
+                      {window.location.origin}/oauth/google-calendar/callback
+                    </code>
+                    <code className="bg-slate-100 dark:bg-slate-800 p-2 rounded block w-full text-xs break-all select-all">
+                      {window.location.origin}/oauth/google-sheets/callback
                     </code>
                   </div>
                 </div>
