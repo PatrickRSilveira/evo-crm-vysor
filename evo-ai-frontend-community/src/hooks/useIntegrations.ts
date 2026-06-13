@@ -142,7 +142,7 @@ export function useIntegrations(agentId: string): UseIntegrationsReturn {
       );
       const calendarConfig = (configsByProvider['google-calendar'] || {}) as Record<string, unknown>;
       const hasCalendarCreds = !!configsByProvider['google-calendar-credentials'];
-      if (hasCalendarCreds) calendarConfig.connected = true;
+      calendarConfig.connected = hasCalendarCreds; // FORCE connected state based on credentials
 
       setGoogleCalendarConfig(
         (Object.keys(calendarConfig).length > 0 || hasCalendarCreds)
@@ -151,7 +151,7 @@ export function useIntegrations(agentId: string): UseIntegrationsReturn {
       );
       const sheetsConfig = (configsByProvider['google-sheets'] || {}) as Record<string, unknown>;
       const hasSheetsCreds = !!configsByProvider['google-sheets-credentials'];
-      if (hasSheetsCreds) sheetsConfig.connected = true;
+      sheetsConfig.connected = hasSheetsCreds; // FORCE connected state based on credentials
 
       setGoogleSheetsConfig(
         (Object.keys(sheetsConfig).length > 0 || hasSheetsCreds)

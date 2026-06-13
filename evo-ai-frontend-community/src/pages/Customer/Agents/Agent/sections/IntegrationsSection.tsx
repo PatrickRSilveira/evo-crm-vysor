@@ -314,11 +314,10 @@ const IntegrationsSection = ({
           open={showGoogleCalendarConfig}
           onOpenChange={setShowGoogleCalendarConfig}
           agentId={agentId}
-          initialConfig={
-            integrations['google-calendar'] as Parameters<
-              typeof GoogleCalendarConfigDialog
-            >[0]['initialConfig']
-          }
+          initialConfig={{
+            ...(integrations['google-calendar'] as Record<string, unknown> || {}),
+            connected: isConnected('google-calendar')
+          }}
           onSave={config => {
             if (onIntegrationsChange) {
               onIntegrationsChange({
@@ -351,11 +350,10 @@ const IntegrationsSection = ({
           open={showGoogleSheetsConfig}
           onOpenChange={setShowGoogleSheetsConfig}
           agentId={agentId}
-          initialConfig={
-            integrations['google-sheets'] as Parameters<
-              typeof GoogleSheetsConfigDialog
-            >[0]['initialConfig']
-          }
+          initialConfig={{
+            ...(integrations['google-sheets'] as Record<string, unknown> || {}),
+            connected: isConnected('google-sheets')
+          }}
           onSave={config => {
             if (onIntegrationsChange) {
               onIntegrationsChange({
