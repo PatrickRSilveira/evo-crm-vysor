@@ -5,6 +5,7 @@ import type {
   GoogleCalendarOAuthResponse,
   GoogleCalendarConnectionResponse
 } from '@/types/integrations';
+import { GOOGLE_OAUTH_GLOBAL_CONFIG } from '@/config/googleOAuth';
 
 const GoogleCalendarService = {
   /**
@@ -14,7 +15,11 @@ const GoogleCalendarService = {
     try {
       const { data } = await api.post(
         `/agents/${agentId}/integrations/google-calendar/authorization`,
-        { email }
+        { 
+          email, 
+          client_id: GOOGLE_OAUTH_GLOBAL_CONFIG.clientId || undefined,
+          client_secret: GOOGLE_OAUTH_GLOBAL_CONFIG.clientSecret || undefined
+        }
       );
       return data;
     } catch (error) {
