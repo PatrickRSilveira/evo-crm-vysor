@@ -34,8 +34,25 @@ class AgentIntegrationsService {
    */
   async getAgentIntegrations(agentId: string): Promise<AgentIntegrationItem[]> {
     const response = await agentProcessorApi.get(`/agents/${agentId}/integrations`);
-    const data = extractData<AgentIntegrationItem[] | null>(response);
-    return Array.isArray(data) ? data : [];
+    const raw = extractData<any>(response);
+
+    // The processor returns { configs: { provider: configObj }, credentials_configured: { provider: bool } }
+    // Convert to array format: [{ provider, config }]
+    if (raw && typeof raw === 'object' && raw.configs) {
+      const items: AgentIntegrationItem[] = [];
+      const configs = raw.configs as Record<string, Record<string, unknown>>;
+      for (const [provider, config] of Object.entries(configs)) {
+        items.push({ provider, config: config || {} });
+      }
+      return items;
+    }
+
+    // Fallback: if response is already an array
+    if (Array.isArray(raw)) {
+      return raw;
+    }
+
+    return [];
   }
 
   /**
