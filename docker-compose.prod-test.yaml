@@ -163,6 +163,8 @@ services:
       CORS_ORIGINS: "${CORS_ORIGINS:-http://localhost:5173,http://localhost:3030}"
       DISABLE_TELEMETRY: "true"
       LOG_LEVEL: info
+      GOOGLE_OAUTH_CLIENT_ID: "${GOOGLE_OAUTH_CLIENT_ID:-}"
+      GOOGLE_OAUTH_CLIENT_SECRET: "${GOOGLE_OAUTH_CLIENT_SECRET:-}"
       ENABLE_ACCOUNT_SIGNUP: "true"
       ENABLE_PUSH_RELAY_SERVER: "true"
       ENABLE_INBOX_EVENTS: "true"
@@ -267,6 +269,8 @@ services:
       EVO_AI_CRM_URL: http://evo_crm:3000
       CORE_SERVICE_URL: http://evo_core:5555/api/v1
       APP_URL: http://localhost:8000
+      GOOGLE_OAUTH_CLIENT_ID: "${GOOGLE_OAUTH_CLIENT_ID:-}"
+      GOOGLE_OAUTH_CLIENT_SECRET: "${GOOGLE_OAUTH_CLIENT_SECRET:-}"
       API_TITLE: Agent Processor Community
       API_DESCRIPTION: Agent Processor Community for Evo AI
       API_VERSION: 1.0.0

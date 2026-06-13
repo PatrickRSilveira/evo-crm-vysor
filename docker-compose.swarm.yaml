@@ -251,6 +251,10 @@ services:
       - DISABLE_TELEMETRY=true
       - LOG_LEVEL=info
 
+    ## 🔑 Chaves OAuth (opcional via env, preferencial via Admin Panel do CRM)
+      - GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID:-}
+      - GOOGLE_OAUTH_CLIENT_SECRET=${GOOGLE_OAUTH_CLIENT_SECRET:-}
+
     ## ✨ Funcionalidades da aplicação
       - ENABLE_ACCOUNT_SIGNUP=true
       - ENABLE_PUSH_RELAY_SERVER=true
@@ -416,6 +420,10 @@ services:
     ## 🌍 URLs públicas da API — troque SUBDOMAIN_API pelo seu domínio
       - APP_URL=https://SUBDOMAIN_API
       - API_URL=https://SUBDOMAIN_API
+
+    ## 🔑 Chaves OAuth (opcional via env, preferencial via Admin Panel do CRM)
+      - GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID:-}
+      - GOOGLE_OAUTH_CLIENT_SECRET=${GOOGLE_OAUTH_CLIENT_SECRET:-}
 
     ## 📋 Metadados da API (OpenAPI)
       - API_TITLE=Agent Processor Community
