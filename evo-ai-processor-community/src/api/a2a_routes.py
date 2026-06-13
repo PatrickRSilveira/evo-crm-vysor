@@ -368,6 +368,7 @@ async def extract_files_from_message_async(message: Dict[str, Any]) -> List[File
                     if "/rails/active_storage/" in url:
                         path_part = url[url.find("/rails/active_storage/"):]
                         url = f"{crm_url}{path_part}"
+                        logger.info(f"🚀 [HAIRPIN NAT FIX] Rewrote active_storage URL to: {url[:80]}...")
 
                     logger.info(f"📎 Downloading file from URL: {url[:80]}...")
                     # Handle redirects manually to fix localhost in Location headers inside docker
@@ -389,6 +390,7 @@ async def extract_files_from_message_async(message: Dict[str, Any]) -> List[File
                             if "/rails/active_storage/" in location:
                                 path_part = location[location.find("/rails/active_storage/"):]
                                 location = f"{crm_url}{path_part}"
+                                logger.info(f"🚀 [HAIRPIN NAT FIX] Rewrote redirect location to: {location[:80]}...")
                                 
                             logger.info(f"📎 Following redirect to: {location[:80]}...")
                             response = await client.get(location)
