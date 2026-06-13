@@ -45,6 +45,10 @@ jobs:
             context: ./evo-ai-frontend-community
             dockerfile: ./evo-ai-frontend-community/Dockerfile
             image: evo-ai-frontend-community
+          - name: evo-crm-gateway
+            context: ./nginx
+            dockerfile: ./nginx/Dockerfile
+            image: evo-crm-gateway
 
     steps:
       - name: Checkout repository
