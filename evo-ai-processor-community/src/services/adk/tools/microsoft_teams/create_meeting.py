@@ -82,10 +82,8 @@ def create_create_teams_meeting_tool(
                 }
 
             if not credentials_config:
-                return {
-                    "status": "error",
-                    "message": "Microsoft Teams credentials not configured for this agent"
-                }
+                # We don't strictly need credentials_config for Webhook
+                pass
 
             try:
                 start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
@@ -107,11 +105,11 @@ def create_create_teams_meeting_tool(
             else:
                 config = teams_config
                 
-            user_principal_name = config.get("user_principal_name")
-            if not user_principal_name:
+            webhook_url = config.get("webhookUrl")
+            if not webhook_url:
                 return {
                     "status": "error",
-                    "message": "User Principal Name (UPN/Email) not configured for this agent."
+                    "message": "URL do Webhook do n8n não configurada para este agente."
                 }
 
             def get_config_value(key: str, default: Any) -> Any:

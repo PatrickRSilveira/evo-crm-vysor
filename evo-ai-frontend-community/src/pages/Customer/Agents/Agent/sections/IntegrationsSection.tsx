@@ -8,7 +8,7 @@ import {
   CardTitle,
   Button,
 } from '@evoapi/design-system';
-import { ExternalLink, Plug, Check, Settings, Loader2, AlertCircle, Volume2 } from 'lucide-react';
+import { ExternalLink, Plug, Check, Settings, Loader2, AlertCircle, Volume2, Video } from 'lucide-react';
 import TTSConfigDialog from '@/components/integrations/TTSConfigDialog';
 import GoogleCalendarConfigDialog from '@/components/integrations/GoogleCalendarConfigDialog';
 import GoogleSheetsConfigDialog from '@/components/integrations/GoogleSheetsConfigDialog';
@@ -194,7 +194,9 @@ const IntegrationsSection = ({
                     <CardHeader className="flex flex-col items-center text-center space-y-4 pb-4">
                       {/* Logo centralizada e maior — BrandIcon aplica a cor oficial da marca */}
                       <div className="flex items-center justify-center w-20 h-20 p-3 rounded-lg bg-muted/50">
-                        {integration.id === 'tts' ? <Volume2 size={48} className="h-12 w-12 text-primary" /> : <BrandIcon id={integration.id} size={48} className="h-12 w-12" />}
+                        {integration.id === 'tts' ? <Volume2 size={48} className="h-12 w-12 text-primary" /> : 
+                         integration.id === 'microsoft-teams' ? <Video size={48} className="h-12 w-12 text-[#6264A7]" /> :
+                         <BrandIcon id={integration.id} size={48} className="h-12 w-12" />}
                       </div>
 
                       {/* Título */}
@@ -398,12 +400,11 @@ const IntegrationsSection = ({
             await persistIntegration('knowledge-nexus', config as unknown as Record<string, unknown>);
             setShowKnowledgeNexusConfig(false);
           }}
-          onDisconnect={async () => {
+          onDeactivate={async () => {
             await removeIntegration('knowledge-nexus');
             setShowKnowledgeNexusConfig(false);
           }}
           initialConfig={(integrations['knowledge-nexus'] || {}) as KnowledgeNexusConfig}
-          agentId={agentId}
         />
       )}
 

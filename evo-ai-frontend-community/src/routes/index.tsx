@@ -84,7 +84,7 @@ import ShopifyPage from '../pages/Customer/Settings/Integrations/ShopifyPage';
 import LinearPage from '../pages/Customer/Settings/Integrations/LinearPage';
 import GoogleCalendarGlobalPage from '../pages/Customer/Settings/Integrations/GoogleCalendarGlobalPage';
 import GoogleSheetsGlobalPage from '../pages/Customer/Settings/Integrations/GoogleSheetsGlobalPage';
-import MicrosoftTeamsGlobalPage from '../pages/Customer/Settings/Integrations/MicrosoftTeamsGlobalPage';
+
 import DashboardAppPage from '../pages/Customer/DashboardApp';
 // import { Overview, Conversations } from '../pages/Customer/Reports';
 // import * as Reports from '../pages/Customer/Reports';
@@ -914,18 +914,6 @@ const AppRouter = () => {
                 <CustomerRoute>
                   <MainLayout>
                     <GoogleCalendarGlobalPage />
-                  </MainLayout>
-                </CustomerRoute>
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/settings/integrations/microsoft_teams_global"
-            element={
-              <PrivateRoute>
-                <CustomerRoute>
-                  <MainLayout>
-                    <MicrosoftTeamsGlobalPage />
                   </MainLayout>
                 </CustomerRoute>
               </PrivateRoute>

@@ -261,21 +261,37 @@ class Api::V1::ConversationsController < Api::V1::BaseController
   end
 
   def microsoft_teams_meeting
-    service = MicrosoftTeams::MeetingService.new
-    unless service.configured?
+    agent = @conversation.inbox.agent_bot
+    integration = AgentIntegration.find_by(agent_id: agent&.id, provider: 'microsoft_teams') || 
+                  AgentIntegration.find_by(agent_id: agent&.id, provider: 'microsoft-teams')
+
+    webhook_url = integration&.config&.dig('webhookUrl') || integration&.config&.dig(:webhookUrl)
+
+    unless webhook_url.present?
       return error_response(
         ApiErrorCodes::INVALID_PARAMETER,
-        'Microsoft Teams global settings are not configured properly.',
+        'O Agente desta caixa de entrada não possui o Webhook do Microsoft Teams configurado.',
         status: :unprocessable_entity
       )
     end
 
+    service = MicrosoftTeams::MeetingService.new(webhook_url)
+
     begin
-      subject = params[:subject] || "Reunião de #{@conversation.contact.name}"
-      join_url = service.generate_meeting_link(subject)
+      subject = params[:subject] || "Reunião com #{@conversation.contact.name}"
+      
+      # Payload enviado para o Webhook do n8n
+      payload = {
+        conversation_id: @conversation.id,
+        contact_name: @conversation.contact.name,
+        contact_email: @conversation.contact.email,
+        contact_phone: @conversation.contact.phone_number
+      }
+
+      join_url = service.generate_meeting_link(subject, payload)
 
       # Injeta a mensagem no chat com o link da reunião
-      content = "Olá! Aqui está o link para a nossa reunião no Microsoft Teams:\n#{join_url}"
+      content = "Olá! Aqui está o link para a nossa reunião:\n#{join_url}"
       message = Messages::MessageBuilder.new(
         current_user,
         @conversation,
@@ -284,7 +300,7 @@ class Api::V1::ConversationsController < Api::V1::BaseController
 
       success_response(
         data: { join_url: join_url, message_id: message.id },
-        message: 'Reunião gerada com sucesso.'
+        message: 'Reunião gerada com sucesso via Webhook.'
       )
     rescue StandardError => e
       error_response(

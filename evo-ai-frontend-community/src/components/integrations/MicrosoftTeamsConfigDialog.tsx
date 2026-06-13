@@ -9,7 +9,7 @@ import {
   Button,
   Select,
 } from '@evoapi/design-system';
-import BrandIcon from '@/components/BrandIcon';
+
 import {
   SelectContent,
   SelectItem,
@@ -25,23 +25,20 @@ import {
   Calendar,
   Clock,
   Settings,
-  User,
-  Building2,
-  FileText,
-  Mail,
+
   Loader2,
   CalendarCheck,
   CalendarClock,
   Repeat,
   Zap,
 } from 'lucide-react';
-import { useLanguage } from '@/hooks/useLanguage';
+
 import { toast } from 'sonner';
 import MicrosoftTeamsService from '@/services/integrations/microsoftTeamsService';
 
 interface MicrosoftTeamsConfig {
   provider: string;
-  email: string;
+  webhookUrl: string;
   connected: boolean;
   settings: any;
 }
@@ -65,13 +62,13 @@ const MicrosoftTeamsConfigDialog = ({
   initialConfig,
   agentId,
 }: MicrosoftTeamsConfigDialogProps) => {
-  const { t } = useLanguage('aiAgents');
+
 
   const [isConnecting, setIsConnecting] = useState(false);
 
   const [config, setConfig] = useState<MicrosoftTeamsConfig>({
     provider: 'microsoft_teams',
-    email: initialConfig?.email || '',
+    webhookUrl: initialConfig?.webhookUrl || '',
     connected: initialConfig?.connected || false,
     settings: {
       minAdvanceTime: {
@@ -119,7 +116,7 @@ const MicrosoftTeamsConfigDialog = ({
     if (initialConfig) {
       setConfig({
         provider: 'microsoft_teams',
-        email: initialConfig?.email || '',
+        webhookUrl: initialConfig?.webhookUrl || '',
         connected: initialConfig?.connected || false,
         settings: {
           minAdvanceTime: {
@@ -165,15 +162,13 @@ const MicrosoftTeamsConfigDialog = ({
   }, [initialConfig]);
 
   const handleConnectTeams = async () => {
-    if (!config.email) {
-      toast.error('Por favor, insira o e-mail (UPN) do atendente');
+    if (!config.webhookUrl) {
+      toast.error('Por favor, insira a URL do Webhook');
       return;
     }
 
     setIsConnecting(true);
     try {
-      // Because we use Server-to-Server flow globally, the user just specifies their email.
-      // We ping the backend to verify the user exists or simply just save it.
       await MicrosoftTeamsService.saveConfiguration(agentId, { ...config, connected: true });
       setConfig({ ...config, connected: true });
       onSave({ ...config, connected: true });
@@ -262,15 +257,15 @@ const MicrosoftTeamsConfigDialog = ({
 
             <div className="space-y-4">
               <div>
-                <Label htmlFor="email">
-                  E-mail do Atendente (User Principal Name)
+                <Label htmlFor="webhookUrl">
+                  URL do Webhook (n8n ou API)
                 </Label>
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="usuario@suaempresa.onmicrosoft.com"
-                  value={config.email}
-                  onChange={(e) => setConfig({ ...config, email: e.target.value })}
+                  id="webhookUrl"
+                  type="url"
+                  placeholder="https://seu-n8n.com/webhook/..."
+                  value={config.webhookUrl}
+                  onChange={(e) => setConfig({ ...config, webhookUrl: e.target.value })}
                 />
               </div>
 
@@ -307,11 +302,11 @@ const MicrosoftTeamsConfigDialog = ({
             </TabsList>
 
             <TabsContent value="general" className="space-y-6">
-              {/* Email Display */}
+              {/* Webhook URL Display */}
               <div className="space-y-3">
-                <Label>E-mail do Atendente</Label>
-                <Input value={config.email} disabled />
-                <p className="text-xs text-muted-foreground">A conta que hospeda as reuniões do Teams.</p>
+                <Label>URL do Webhook</Label>
+                <Input value={config.webhookUrl} disabled />
+                <p className="text-xs text-muted-foreground">URL que receberá o payload para criar a reunião.</p>
               </div>
 
               {/* Min Advance Time */}

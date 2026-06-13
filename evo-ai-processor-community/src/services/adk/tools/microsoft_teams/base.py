@@ -161,54 +161,15 @@ class MicrosoftTeamsClient:
         end_time: datetime
     ) -> Dict[str, Any]:
         """
-        Check user availability for a time range using Microsoft Graph API.
-        
-        Args:
-            credentials_config: Microsoft Teams credentials configuration
-            user_principal_name: The UPN or email of the user to check
-            start_time: Start of time range
-            end_time: End of time range
-            
-        Returns:
-            Dictionary with availability information
+        Check user availability.
+        Since we are using a Webhook to an external system (n8n/API), 
+        we assume available and let the external system handle logic.
         """
-        try:
-            token = await self._get_access_token(credentials_config)
-            
-            # Use the CalendarView API to get events in the specified range
-            url = f"https://graph.microsoft.com/v1.0/users/{user_principal_name}/calendarView"
-            params = {
-                "startDateTime": start_time.isoformat() + "Z",
-                "endDateTime": end_time.isoformat() + "Z",
-                "$select": "subject,start,end,showAs"
-            }
-            
-            headers = {
-                "Authorization": f"Bearer {token}",
-                "Content-Type": "application/json"
-            }
-            
-            async with httpx.AsyncClient() as client:
-                response = await client.get(url, params=params, headers=headers)
-                response.raise_for_status()
-                
-                events_data = response.json()
-                events = events_data.get("value", [])
-                
-                # Filter events that actually block time (Busy, Oof)
-                blocking_events = [e for e in events if e.get("showAs") in ["busy", "oof"]]
-                
-                return {
-                    "status": "success",
-                    "available": len(blocking_events) == 0,
-                    "events": blocking_events
-                }
-                
-        except Exception as e:
-            return {
-                "status": "error",
-                "message": f"Microsoft Graph API error: {str(e)}"
-            }
+        return {
+            "status": "success",
+            "available": True,
+            "events": []
+        }
 
     async def create_meeting(
         self,
@@ -221,91 +182,55 @@ class MicrosoftTeamsClient:
         attendees: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """
-        Create an online Microsoft Teams meeting.
-        
-        Args:
-            credentials_config: Microsoft Teams credentials configuration
-            config: Microsoft Teams settings configuration (contains user_principal_name)
-            summary: Event title
-            start_time: Event start time
-            end_time: Event end time
-            description: Event description
-            attendees: List of attendee email addresses
-            
-        Returns:
-            Dictionary with creation result
+        Create an online Microsoft Teams meeting via Webhook (n8n/API).
         """
         try:
-            user_principal_name = config.get("user_principal_name")
-            if not user_principal_name:
+            webhook_url = config.get("webhookUrl")
+            if not webhook_url:
                 return {
                     "status": "error",
-                    "message": "User Principal Name (UPN/Email) not configured for this agent."
+                    "message": "URL do Webhook não configurada para este agente."
                 }
                 
-            token = await self._get_access_token(credentials_config)
+            # Create payload for the webhook
+            start_dt = start_time.isoformat()
+            end_dt = end_time.isoformat()
             
-            # Format attendees
-            attendee_list = []
-            if attendees:
-                for email in attendees:
-                    attendee_list.append({
-                        "emailAddress": {
-                            "address": email,
-                            "name": email
-                        },
-                        "type": "required"
-                    })
-            
-            # Create event with onlineMeeting
-            url = f"https://graph.microsoft.com/v1.0/users/{user_principal_name}/events"
-            
-            # Ensure naive datetimes are converted to aware datetimes properly
-            start_dt = start_time.strftime("%Y-%m-%dT%H:%M:%S")
-            end_dt = end_time.strftime("%Y-%m-%dT%H:%M:%S")
-            
-            event_data = {
+            payload = {
                 "subject": summary,
-                "body": {
-                    "contentType": "HTML",
-                    "content": description
-                },
-                "start": {
-                    "dateTime": start_dt,
-                    "timeZone": config.get("timezone", "America/Sao_Paulo")
-                },
-                "end": {
-                    "dateTime": end_dt,
-                    "timeZone": config.get("timezone", "America/Sao_Paulo")
-                },
-                "attendees": attendee_list,
-                "isOnlineMeeting": True,
-                "onlineMeetingProvider": "teamsForBusiness"
-            }
-            
-            headers = {
-                "Authorization": f"Bearer {token}",
-                "Content-Type": "application/json"
+                "description": description,
+                "start": start_dt,
+                "end": end_dt,
+                "attendees": attendees or []
             }
             
             async with httpx.AsyncClient() as client:
-                response = await client.post(url, json=event_data, headers=headers)
+                response = await client.post(webhook_url, json=payload, timeout=30.0)
                 response.raise_for_status()
                 
-                created_event = response.json()
+                response_data = response.json()
+                
+                # Try common link field names
+                meeting_link = response_data.get("link") or response_data.get("joinWebUrl") or response_data.get("url")
+                
+                if not meeting_link:
+                    return {
+                        "status": "error",
+                        "message": "Webhook did not return a valid meeting link (expected 'link', 'joinWebUrl' or 'url')"
+                    }
                 
                 return {
                     "status": "success",
-                    "event_id": created_event.get("id"),
-                    "meeting_link": created_event.get("onlineMeeting", {}).get("joinUrl"),
-                    "summary": created_event.get("subject"),
-                    "start": created_event.get("start", {}).get("dateTime"),
-                    "end": created_event.get("end", {}).get("dateTime"),
-                    "raw_response": created_event
+                    "event_id": "webhook-generated",
+                    "meeting_link": meeting_link,
+                    "summary": summary,
+                    "start": start_dt,
+                    "end": end_dt,
+                    "raw_response": response_data
                 }
                 
         except Exception as e:
             return {
                 "status": "error",
-                "message": f"Microsoft Graph API error: {str(e)}"
+                "message": f"Erro ao disparar webhook: {str(e)}"
             }

@@ -27,7 +27,6 @@ import {
   SiDialogflow,
   SiElevenlabs,
   SiIntercom,
-  SiMicrosoftteams,
 } from '@icons-pack/react-simple-icons';
 
 const BRAND_ICONS: Record<string, IconType> = {
@@ -68,8 +67,6 @@ const BRAND_ICONS: Record<string, IconType> = {
   'eleven-labs': SiElevenlabs,
   whatsappcloud: SiWhatsapp,
   'whatsapp-cloud': SiWhatsapp,
-  'microsoft-teams': SiMicrosoftteams,
-  microsoft_teams: SiMicrosoftteams,
 };
 
 // Official brand colors from simple-icons. Used as defaults when ChannelIcon
