@@ -1,28 +1,71 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Card, Button, Input, Label } from '@evoapi/design-system';
+import { adminConfigService } from '@/services/admin/adminConfigService';
+import type { AdminConfigData } from '@/types/admin/adminConfig';
 import BaseHeader from '@/components/base/BaseHeader';
 import BrandIcon from '@/components/BrandIcon';
 
 export default function GoogleCalendarGlobalPage() {
   const navigate = useNavigate();
-  const [clientId, setClientId] = useState(() => localStorage.getItem('GLOBAL_GOOGLE_CALENDAR_CLIENT_ID') || '');
-  const [clientSecret, setClientSecret] = useState(() => localStorage.getItem('GLOBAL_GOOGLE_CALENDAR_CLIENT_SECRET') || '');
+  const [clientId, setClientId] = useState('');
+  const [clientSecret, setClientSecret] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = () => {
-    localStorage.setItem('GLOBAL_GOOGLE_CALENDAR_CLIENT_ID', clientId);
-    localStorage.setItem('GLOBAL_GOOGLE_CALENDAR_CLIENT_SECRET', clientSecret);
-    toast.success('Configurações globais salvas localmente no navegador!');
-    navigate('/settings/integrations');
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const data = await adminConfigService.getConfig('google_oauth');
+        setClientId((data.GOOGLE_OAUTH_CLIENT_ID as string) || '');
+        setClientSecret((data.GOOGLE_OAUTH_CLIENT_SECRET as string) || '');
+      } catch (error) {
+        console.error('Error loading global google_oauth config:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadConfig();
+  }, []);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const payload = {
+        GOOGLE_OAUTH_CLIENT_ID: clientId,
+        GOOGLE_OAUTH_CLIENT_SECRET: clientSecret,
+      } as AdminConfigData;
+      
+      await adminConfigService.saveConfig('google_oauth', payload);
+      toast.success('Configurações globais salvas com sucesso no banco de dados!');
+      navigate('/settings/integrations');
+    } catch (error) {
+      toast.error('Erro ao salvar as configurações. Verifique se você é um Super Admin.');
+      console.error(error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleDisconnect = () => {
-    localStorage.removeItem('GLOBAL_GOOGLE_CALENDAR_CLIENT_ID');
-    localStorage.removeItem('GLOBAL_GOOGLE_CALENDAR_CLIENT_SECRET');
-    setClientId('');
-    setClientSecret('');
-    toast.success('Credenciais globais removidas com sucesso!');
+  const handleDisconnect = async () => {
+    setIsSaving(true);
+    try {
+      const payload = {
+        GOOGLE_OAUTH_CLIENT_ID: null,
+        GOOGLE_OAUTH_CLIENT_SECRET: null,
+      } as AdminConfigData;
+      
+      await adminConfigService.saveConfig('google_oauth', payload);
+      setClientId('');
+      setClientSecret('');
+      toast.success('Credenciais globais removidas com sucesso do banco de dados!');
+    } catch (error) {
+      toast.error('Erro ao remover as configurações.');
+      console.error(error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -95,8 +138,8 @@ export default function GoogleCalendarGlobalPage() {
                 <Button variant="outline" onClick={() => navigate('/settings/integrations')}>
                   Cancelar
                 </Button>
-                <Button onClick={handleSave}>
-                  Salvar Configurações
+                <Button onClick={handleSave} disabled={isSaving || isLoading}>
+                  {isSaving ? 'Salvando...' : 'Salvar Configurações'}
                 </Button>
               </div>
             </div>
