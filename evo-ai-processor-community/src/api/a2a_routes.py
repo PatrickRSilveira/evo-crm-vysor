@@ -365,8 +365,26 @@ async def extract_files_from_message_async(message: Dict[str, Any]) -> List[File
                         url = url.replace("http://localhost:3000", crm_url)
 
                     logger.info(f"📎 Downloading file from URL: {url[:80]}...")
-                    async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
+                    # Handle redirects manually to fix localhost in Location headers inside docker
+                    async with httpx.AsyncClient(timeout=30.0, follow_redirects=False) as client:
                         response = await client.get(url)
+                        
+                        max_redirects = 5
+                        redirects = 0
+                        while response.is_redirect and redirects < max_redirects:
+                            location = response.headers.get("location")
+                            if not location:
+                                break
+                                
+                            if location.startswith("/"):
+                                location = f"{crm_url}{location}"
+                            elif "localhost:3000" in location and "localhost" not in crm_url:
+                                location = location.replace("http://localhost:3000", crm_url)
+                                
+                            logger.info(f"📎 Following redirect to: {location[:80]}...")
+                            response = await client.get(location)
+                            redirects += 1
+                            
                         response.raise_for_status()
                         file_bytes = response.content
                         mime_type = response.headers.get("content-type", file_data.get("mimeType", "application/octet-stream"))
