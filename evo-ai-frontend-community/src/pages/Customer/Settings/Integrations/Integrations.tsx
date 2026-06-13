@@ -80,8 +80,8 @@ export default function Integrations() {
     setLoading(true);
     try {
       const response = await integrationsService.getIntegrations();
-      // Filter out the raw 'microsoft_teams' from backend so it doesn't duplicate with 'microsoft_teams_global'
-      const fetched = [...response.data].filter(i => i.id !== 'microsoft_teams');
+      // Filter out 'microsoft_teams' and 'oauth_applications'
+      const fetched = [...response.data].filter(i => i.id !== 'microsoft_teams' && i.id !== 'oauth_applications');
       
       // Forçar exibição do card do Google Calendar, Sheets e MS Teams se o backend não retornar
       if (!fetched.some(i => i.id === 'google_calendar_global')) {
