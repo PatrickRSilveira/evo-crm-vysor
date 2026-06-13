@@ -354,7 +354,17 @@ async def extract_files_from_message_async(message: Dict[str, Any]) -> List[File
             elif "url" in file_data and file_data["url"]:
                 try:
                     url = file_data["url"]
-                    logger.info(f"📎 Downloading file from URL: {url[:50]}...")
+                    import os
+                    crm_url = os.getenv("EVO_AI_CRM_URL", "http://localhost:3000").rstrip("/")
+                    
+                    # Fix relative URLs
+                    if url.startswith("/"):
+                        url = f"{crm_url}{url}"
+                    # Fix localhost URLs when running in Docker
+                    elif "localhost:3000" in url and "localhost" not in crm_url:
+                        url = url.replace("http://localhost:3000", crm_url)
+
+                    logger.info(f"📎 Downloading file from URL: {url[:80]}...")
                     async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
                         response = await client.get(url)
                         response.raise_for_status()
@@ -996,11 +1006,10 @@ async def handle_message_send(
     # Extract text and files from message
     text = extract_text_from_message(message)
     files = await extract_files_from_message_async(message)
-
     # Use default text if only files provided or if message is completely empty
-    if not text and files:
+    if (not text or text.strip() == "No content") and files:
         text = "Analyze the provided files"
-    elif not text:
+    elif not text or text.strip() == "No content":
         text = " "  # Send a blank space to prevent LLM validation errors
 
     # Check TTS config and append strong instruction if needed to force weak models
@@ -1339,9 +1348,9 @@ async def handle_message_stream(
     context_id = params.get("contextId", str(uuid.uuid4()))
 
     # Use default text if only files provided or if message is completely empty
-    if not text and files:
+    if (not text or text.strip() == "No content") and files:
         text = "Analyze the provided files"
-    elif not text:
+    elif not text or text.strip() == "No content":
         text = " "  # Send a blank space to prevent LLM validation errors
 
     # Extract and combine conversation history
