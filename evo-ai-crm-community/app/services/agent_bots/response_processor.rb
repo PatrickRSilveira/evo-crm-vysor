@@ -57,21 +57,47 @@ class AgentBots::ResponseProcessor
     
     attachments = []
     if file_part.present?
-      file_info = file_part['file']
-      if file_info
-        if file_info['bytes'].present? && file_info['mimeType'].present?
+      # Handle A2A Spec format (nested under 'file') or custom format (flat in part)
+      file_info = file_part['file'] || file_part
+      
+      if file_info.present?
+        base64_data = nil
+        mime_type = file_info['mimeType'] || 'application/octet-stream'
+        filename = file_info['name'] || "attachment_#{SecureRandom.hex(4)}"
+
+        if file_info['bytes'].present?
+          base64_data = file_info['bytes']
+        elsif file_info['url'].to_s.start_with?('data:')
+          # Extract base64 from data URL: data:audio/ogg;base64,T2dn...
+          match = file_info['url'].match(/data:(.*?);base64,(.*)/)
+          if match
+            mime_type = match[1] unless match[1].blank?
+            base64_data = match[2]
+            
+            # Set default extension based on mime_type if name is generic
+            if filename.start_with?('attachment_')
+              ext = mime_type.split('/').last || 'bin'
+              filename = "#{filename}.#{ext}"
+            end
+          end
+        end
+
+        if base64_data.present?
           begin
-            decoded_bytes = Base64.decode64(file_info['bytes'])
+            decoded_bytes = Base64.decode64(base64_data)
             io = StringIO.new(decoded_bytes)
-            # Create a mock ActionDispatch::Http::UploadedFile like object
+            
             attachments << {
               io: io,
-              filename: file_info['name'] || 'attachment',
-              content_type: file_info['mimeType']
+              filename: filename,
+              content_type: mime_type
             }
+            Rails.logger.info "[AgentBot HTTP] Successfully extracted attachment: #{filename} (#{mime_type})"
           rescue StandardError => e
             Rails.logger.error "[AgentBot HTTP] Error decoding file bytes: #{e.message}"
           end
+        else
+          Rails.logger.warn "[AgentBot HTTP] Could not extract base64 data from file_info"
         end
       end
     end
