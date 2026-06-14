@@ -67,9 +67,12 @@ func (d *dispatchEngineImpl) Dispatch(
 	cfg            model.BotConfig,
 	postbackURL    string,
 ) error {
-	// If audio is provided, bypass segmentation and send a single audio part
+	var audioErr error
 	if len(audio) > 0 {
-		return d.sendAudioPart(ctx, postbackURL, audio)
+		audioErr = d.sendAudioPart(ctx, postbackURL, audio)
+		if audioErr != nil {
+			slog.Error("pipeline.dispatch.audio_failed", "error", audioErr)
+		}
 	}
 
 	parts := segmentContent(content, cfg)
@@ -92,6 +95,10 @@ func (d *dispatchEngineImpl) Dispatch(
 			)
 			return brtErrors.ErrDispatchInterrupted
 		default:
+		}
+
+		if strings.TrimSpace(part) == "" {
+			continue // Skip sending empty text messages
 		}
 
 		if err := d.sendPart(ctx, postbackURL, part); err != nil {
