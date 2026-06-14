@@ -69,9 +69,35 @@ func (d *dispatchEngineImpl) Dispatch(
 ) error {
 	var audioErr error
 	if len(audio) > 0 {
-		audioErr = d.sendAudioPart(ctx, postbackURL, audio)
+		// Send the first part of the text with the audio, or just the whole text if it fits
+		parts := segmentContent(content, cfg)
+		var audioContent string
+		if len(parts) > 0 {
+			audioContent = parts[0]
+			if cfg.MessageSignature != "" {
+				audioContent = cfg.MessageSignature + audioContent
+			}
+		}
+		
+		audioErr = d.sendAudioPart(ctx, postbackURL, audioContent, audio)
 		if audioErr != nil {
 			slog.Error("pipeline.dispatch.audio_failed", "error", audioErr)
+		} else if len(parts) > 0 {
+			// If audio succeeded, the first text part was already sent with the audio!
+			// We only need to send the REMAINING parts (if any) as separate text messages.
+			parts = parts[1:]
+			
+			// We skip the standard text sending below by reassigning content to only the remaining parts.
+			// Actually, just sending the remaining parts directly here is easier.
+			for i, part := range parts {
+				if strings.TrimSpace(part) == "" {
+					continue
+				}
+				if err := d.sendPart(ctx, postbackURL, part); err != nil {
+					return fmt.Errorf("pipeline.dispatch.send_remaining[%d]: %w", i, err)
+				}
+			}
+			return nil
 		}
 	}
 
@@ -163,8 +189,8 @@ func (d *dispatchEngineImpl) sendPart(ctx context.Context, postbackURL, content 
 	return nil
 }
 
-// sendAudioPart sends an audio payload as multipart/form-data.
-func (d *dispatchEngineImpl) sendAudioPart(ctx context.Context, postbackURL string, audio []byte) error {
+// sendAudioPart sends an audio payload as multipart/form-data along with optional text content.
+func (d *dispatchEngineImpl) sendAudioPart(ctx context.Context, postbackURL string, content string, audio []byte) error {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 
@@ -182,6 +208,11 @@ func (d *dispatchEngineImpl) sendAudioPart(ctx context.Context, postbackURL stri
 	}
 
 	_ = writer.WriteField("message_type", "outgoing")
+	
+	// Include the text content in the same message if available
+	if content != "" {
+		_ = writer.WriteField("content", content)
+	}
 
 	if err := writer.Close(); err != nil {
 		return fmt.Errorf("close multipart writer: %w", err)
