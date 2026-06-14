@@ -18,7 +18,7 @@ import { Loader2 } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 
 interface TTSConfig {
-  provider: 'elevenlabs' | 'fish' | 'cartesia' | 'kokoro' | 'voxtral' | 'openrouter';
+  provider: 'elevenlabs' | 'fish' | 'cartesia' | 'kokoro' | 'voxtral' | 'openrouter' | 'google';
   apiKey: string;
   api_url?: string; // Custom API URL for Kokoro/Voxtral (e.g., OpenRouter endpoint)
   model?: string;   // Model Reference ID for OpenRouter
@@ -157,7 +157,7 @@ const TTSConfigDialog = ({
             <Label>Provedor TTS</Label>
             <Select
               value={config.provider}
-              onValueChange={(value: 'elevenlabs' | 'fish' | 'cartesia' | 'kokoro' | 'voxtral' | 'openrouter') => {
+              onValueChange={(value: 'elevenlabs' | 'fish' | 'cartesia' | 'kokoro' | 'voxtral' | 'openrouter' | 'google') => {
                 const isOpenRouter = value === 'openrouter';
                 setConfig({ 
                   ...config, 
@@ -172,6 +172,7 @@ const TTSConfigDialog = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="elevenlabs">ElevenLabs</SelectItem>
+                <SelectItem value="google">Google Cloud TTS</SelectItem>
                 <SelectItem value="openrouter">OpenRouter</SelectItem>
                 <SelectItem value="fish">Fish Audio</SelectItem>
                 <SelectItem value="cartesia">Cartesia</SelectItem>
@@ -287,14 +288,18 @@ const TTSConfigDialog = ({
             </div>
           )}
 
-          {/* Manual Voice ID Entry (For Fish, Cartesia, Kokoro, Voxtral, OpenRouter) */}
+          {/* Manual Voice ID Entry (For Fish, Cartesia, Kokoro, Voxtral, OpenRouter, Google) */}
           {config.apiKey && config.provider !== 'elevenlabs' && (
             <div className="space-y-2">
-              <Label htmlFor="voiceId">ID da Voz (Model Reference ID)</Label>
+              <Label htmlFor="voiceId">ID da Voz (Model Reference ID / Nome da Voz)</Label>
               <Input
                 id="voiceId"
                 type="text"
-                placeholder={`Insira o ID do modelo da voz (${config.provider})`}
+                placeholder={
+                  config.provider === 'google' 
+                    ? 'Ex: pt-BR-Neural2-B' 
+                    : `Insira o ID do modelo da voz (${config.provider})`
+                }
                 value={config.voice}
                 onChange={(e) => setConfig({ ...config, voice: e.target.value })}
               />
