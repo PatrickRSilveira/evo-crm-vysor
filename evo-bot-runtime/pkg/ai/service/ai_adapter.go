@@ -193,10 +193,13 @@ func downloadAudioFromArtifacts(ctx context.Context, client *http.Client, timeou
 		if len(parts) == 2 {
 			decoded, err := base64.StdEncoding.DecodeString(parts[1])
 			if err != nil {
+				slog.Error("pipeline.ai.download_audio.decode_failed", "error", err, "base64_len", len(parts[1]))
 				return nil, fmt.Errorf("decode base64 audio: %w", err)
 			}
 			slog.Info("pipeline.ai.download_audio.completed", "bytes", len(decoded), "source", "data_uri")
 			return decoded, nil
+		} else {
+			slog.Error("pipeline.ai.download_audio.invalid_data_uri", "url_prefix", audioURL[:30])
 		}
 	}
 

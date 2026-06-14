@@ -190,11 +190,10 @@ func (d *dispatchEngineImpl) sendAudioPart(ctx context.Context, postbackURL stri
 
 	_ = writer.WriteField("message_type", "outgoing")
 	
-	// Include the text content in the same message if available
-	if content != "" {
-		_ = writer.WriteField("content", content)
-	}
-
+	// Chatwoot (or Rack) sometimes fails to parse the multipart form correctly if the content field is completely omitted.
+	// We explicitly write the "content" field even if it is empty, to match the previously working behavior.
+	_ = writer.WriteField("content", content)
+	
 	if err := writer.Close(); err != nil {
 		return fmt.Errorf("close multipart writer: %w", err)
 	}
