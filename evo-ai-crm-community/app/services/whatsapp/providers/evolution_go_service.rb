@@ -494,7 +494,7 @@ class Whatsapp::Providers::EvolutionGoService < Whatsapp::Providers::BaseService
     body = {
       number: phone_number.delete('+'),
       url: media_url,
-      caption: html_to_whatsapp(message.content.to_s),
+      caption: evolution_go_type == 'audio' ? '' : html_to_whatsapp(message.content.to_s),
       filename: attachment.file.filename.to_s,
       type: evolution_go_type,
       delay: 0

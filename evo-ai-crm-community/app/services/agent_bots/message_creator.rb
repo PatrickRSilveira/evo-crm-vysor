@@ -94,6 +94,8 @@ class AgentBots::MessageCreator
         attachment = message.attachments.build(file: uploaded_attachment)
         if uploaded_attachment.is_a?(ActionDispatch::Http::UploadedFile)
           attachment.file_type = file_type(uploaded_attachment.content_type) rescue 'file'
+        elsif uploaded_attachment.is_a?(Hash) && uploaded_attachment[:content_type].present?
+          attachment.file_type = file_type(uploaded_attachment[:content_type]) rescue 'file'
         end
       end
     end
