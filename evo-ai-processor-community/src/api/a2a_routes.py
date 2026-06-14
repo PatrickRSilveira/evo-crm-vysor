@@ -1040,7 +1040,11 @@ async def handle_message_send(
     # (OpenRouter models generally don't support audio_url parts, and UI already transcribes speech)
     agent_config = agent.config or {}
     llm_config = agent_config.get("llm", {})
-    if llm_config.get("provider") == "openrouter":
+    provider = str(llm_config.get("provider") or "").lower()
+    model_name = str(agent.model or "").lower()
+    
+    # Filter out audio files if using OpenRouter to prevent API connection errors
+    if provider == "openrouter" or "openrouter/" in model_name:
         files = [f for f in files if not f.content_type.startswith("audio/")]
     # Use default text if only files provided or if message is completely empty
     if (not text or text.strip() == "No content") and files:
@@ -1388,7 +1392,9 @@ async def handle_message_stream(
     if agent:
         agent_config = agent.config or {}
         llm_config = agent_config.get("llm", {})
-        if llm_config.get("provider") == "openrouter":
+        provider = str(llm_config.get("provider") or "").lower()
+        model_name = str(agent.model or "").lower()
+        if provider == "openrouter" or "openrouter/" in model_name:
             files = [f for f in files if not f.content_type.startswith("audio/")]
     context_id = params.get("contextId", str(uuid.uuid4()))
 
