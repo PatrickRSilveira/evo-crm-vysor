@@ -435,12 +435,20 @@ def create_task_response(
     )
 
     # Create main response artifact (only the agent's response)
-    artifacts = artifacts or [
-        {
-            "artifactId": str(uuid.uuid4()),
-            "parts": [{"type": "text", "text": final_response}],
-        }
-    ]
+    if artifacts is None:
+        artifacts = []
+        
+    # Always include the text response as an artifact if it's not empty
+    if final_response and final_response.strip():
+        # Check if we already have a text artifact to avoid duplication
+        has_text_artifact = any(
+            p.get("type") == "text" for art in artifacts for p in art.get("parts", [])
+        )
+        if not has_text_artifact:
+            artifacts.insert(0, {
+                "artifactId": str(uuid.uuid4()),
+                "parts": [{"type": "text", "text": final_response}],
+            })
 
     logger.info(f"📦 Created main artifact")
 
