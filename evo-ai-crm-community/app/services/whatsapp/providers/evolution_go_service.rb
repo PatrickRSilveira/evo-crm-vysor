@@ -167,6 +167,33 @@ class Whatsapp::Providers::EvolutionGoService < Whatsapp::Providers::BaseService
     Rails.logger.error "[Evolution Go] Error toggling typing status: #{e.message}"
   end
 
+  def read_messages(phone_number, messages)
+    clean_number = phone_number.delete('+')
+    remote_jid = "#{clean_number}@s.whatsapp.net"
+
+    read_messages_payload = messages.map do |message|
+      {
+        remoteJid: remote_jid,
+        fromMe: message.message_type == 'outgoing',
+        id: message.source_id
+      }
+    end
+
+    body = {
+      readMessages: read_messages_payload
+    }
+
+    response = HTTParty.post(
+      "#{api_base_path}/chat/markMessageAsRead/#{instance_name}",
+      headers: instance_headers,
+      body: body.to_json
+    )
+
+    process_evolution_go_response(response)
+  rescue StandardError => e
+    Rails.logger.error "[Evolution Go] Error marking messages as read: #{e.message}"
+  end
+
   def api_headers
     admin_token = whatsapp_channel.provider_config['admin_token'].presence || GlobalConfigService.load('EVOLUTION_GO_ADMIN_SECRET', '').to_s.strip
     {

@@ -44,7 +44,20 @@ class AgentBots::HttpRequestService
     conversation = find_conversation_from_payload
     return unless conversation
 
-    Rails.configuration.dispatcher.dispatch(Events::Types::CONVERSATION_TYPING_ON, Time.zone.now, conversation: conversation, user: @agent_bot, is_private: false)
+    # Mark conversation as read to trigger blue ticks (listen confirmation)
+    conversation.update(agent_last_seen_at: Time.current)
+    Rails.configuration.dispatcher.dispatch(Events::Types::CONVERSATION_READ, Time.zone.now, conversation: conversation)
+
+    # Check if this is an audio message to display "recording" instead of "typing"
+    is_audio = false
+    attachments = @payload[:attachments] || []
+    if attachments.is_a?(Array) && attachments.any?
+      is_audio = attachments.any? { |a| a[:file_type] == 'audio' || a['file_type'] == 'audio' }
+    end
+
+    typing_event = is_audio ? Events::Types::CONVERSATION_RECORDING : Events::Types::CONVERSATION_TYPING_ON
+
+    Rails.configuration.dispatcher.dispatch(typing_event, Time.zone.now, conversation: conversation, user: @agent_bot, is_private: false)
   rescue StandardError => e
     Rails.logger.error "[AgentBot HTTP] Error triggering typing on: #{e.message}"
   end
