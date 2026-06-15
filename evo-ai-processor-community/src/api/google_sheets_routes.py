@@ -227,7 +227,7 @@ async def complete_authorization(
         spreadsheets_data = [SpreadsheetItem(**sheet).model_dump() if isinstance(sheet, dict) else sheet.model_dump() if hasattr(sheet, 'model_dump') else sheet for sheet in result.get("spreadsheets", [])]
         
         return success_response(
-            data={
+            data={"success": True, 
                 "email": result.get("email"),
                 "spreadsheets": spreadsheets_data
             },
@@ -449,7 +449,7 @@ async def oauth_callback(
         spreadsheets_data = [SpreadsheetItem(**sheet).model_dump() if isinstance(sheet, dict) else sheet.model_dump() if hasattr(sheet, 'model_dump') else sheet for sheet in result.get("spreadsheets", [])]
         
         return success_response(
-            data={
+            data={"success": True, 
                 "email": result.get("email"),
                 "spreadsheets": spreadsheets_data
             },

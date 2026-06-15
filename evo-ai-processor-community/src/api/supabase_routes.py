@@ -225,7 +225,7 @@ async def complete_authorization(
             )
 
         return success_response(
-            data={"username": result.get("username"), "email": result.get("email")},
+            data={"success": True, "username": result.get("username"), "email": result.get("email")},
             message="Authorization completed successfully"
         )
 
@@ -544,7 +544,7 @@ async def oauth_callback(
             )
 
         return success_response(
-            data={"username": result.get("username"), "email": result.get("email")},
+            data={"success": True, "username": result.get("username"), "email": result.get("email")},
             message="Authorization completed successfully"
         )
 

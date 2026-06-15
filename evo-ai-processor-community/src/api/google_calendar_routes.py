@@ -267,6 +267,7 @@ async def complete_authorization(
 
         return success_response(
             data={
+                "success": True,
                 "email": result.get("email"),
                 "calendars": [CalendarItem(**cal).model_dump() for cal in result.get("calendars", [])]
             },
@@ -593,6 +594,7 @@ async def oauth_callback(
 
         return success_response(
             data={
+                "success": True,
                 "email": result.get("email"),
                 "calendars": calendars_data
             },
