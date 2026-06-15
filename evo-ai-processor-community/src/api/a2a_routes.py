@@ -1058,9 +1058,8 @@ async def handle_message_send(
     # Check if the user sent an audio message (detect before stripping)
     has_audio_in_files = any(
         f.content_type.startswith("audio/") or 
-        (f.content_type.startswith("video/") and any(kw in f.filename.lower() for kw in ["audio", "voice", "ptt", "record"])) or
-        f.filename.lower().endswith((".ogg", ".aac", ".wav", ".mp3", ".m4a")) or
-        (f.filename.lower().endswith(".mp4") and any(kw in f.filename.lower() for kw in ["audio", "voice", "ptt", "record"]))
+        f.content_type.startswith("video/") or
+        f.filename.lower().endswith((".ogg", ".aac", ".wav", ".mp3", ".m4a", ".mp4", ".webm"))
         for f in files
     )
     
@@ -1471,9 +1470,8 @@ async def handle_message_stream(
     # Check if the user sent an audio message (detect before stripping)
     has_audio_in_files = any(
         f.content_type.startswith("audio/") or 
-        (f.content_type.startswith("video/") and any(kw in f.filename.lower() for kw in ["audio", "voice", "ptt", "record"])) or
-        f.filename.lower().endswith((".ogg", ".aac", ".wav", ".mp3", ".m4a")) or
-        (f.filename.lower().endswith(".mp4") and any(kw in f.filename.lower() for kw in ["audio", "voice", "ptt", "record"]))
+        f.content_type.startswith("video/") or
+        f.filename.lower().endswith((".ogg", ".aac", ".wav", ".mp3", ".m4a", ".mp4", ".webm"))
         for f in files
     )
     
