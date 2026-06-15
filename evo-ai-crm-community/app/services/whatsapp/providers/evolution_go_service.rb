@@ -155,9 +155,10 @@ class Whatsapp::Providers::EvolutionGoService < Whatsapp::Providers::BaseService
     end
 
     clean_number = phone_number.delete('+')
+    remote_jid = clean_number.include?('@') ? clean_number : "#{clean_number}@s.whatsapp.net"
 
     body = {
-      number: clean_number,
+      number: remote_jid,
       state: presence,
       isAudio: is_audio
     }
@@ -175,13 +176,16 @@ class Whatsapp::Providers::EvolutionGoService < Whatsapp::Providers::BaseService
 
   def read_messages(phone_number, messages)
     clean_number = phone_number.delete('+')
-    message_ids = messages.map(&:source_id).compact
+
+    message_ids = messages.map do |msg|
+      msg.source_id || msg.additional_attributes&.dig('message_id')
+    end.compact
 
     return if message_ids.empty?
 
     body = {
-      number: clean_number,
-      id: message_ids
+      id: [message_ids.first], # Assuming we just need to read the last message
+      number: clean_number
     }
 
     response = HTTParty.post(
