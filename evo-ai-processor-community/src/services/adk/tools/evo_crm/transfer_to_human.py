@@ -171,16 +171,12 @@ def create_transfer_to_human_tool(
                         break
             
             # Validate that we have either assignee_id or team_id
-            if not effective_assignee_id and not effective_team_id:
-                return {
-                    "status": "error",
-                    "message": "Either assignee_id or team_id is required. If transfer_rules are configured, they will be used automatically. Otherwise, please provide assignee_id or team_id explicitly.",
-                    "conversation_id": effective_conversation_id,
-                }
+            # If we don't have them, we will just change the conversation status to 'open' 
+            # so it goes to the Unassigned queue for human agents.
             
             logger.info(
                 f"Transferring conversation {effective_conversation_id} to agent {effective_assignee_id}"
-                + (f" (team: {effective_team_id})" if effective_team_id else "")
+                + (f" (team: {effective_team_id})" if effective_team_id else " (Unassigned Queue)")
                 + (f" - Reason: {reason}" if reason else "")
             )
             
@@ -193,16 +189,18 @@ def create_transfer_to_human_tool(
             if effective_team_id:
                 request_body["team_id"] = effective_team_id
             
-            # Make API request to assign conversation
-            endpoint = f"/conversations/{effective_conversation_id}/assignments"
-            
             try:
-                response = await client.post(
-                    endpoint=endpoint,
-                    json_data=request_body,
-                )
+                # If we have an assignee or team, assign it first
+                if request_body:
+                    endpoint = f"/conversations/{effective_conversation_id}/assignments"
+                    response = await client.post(
+                        endpoint=endpoint,
+                        json_data=request_body,
+                    )
+                else:
+                    response = {"message": "Moved to unassigned queue"}
 
-                # After successful assignment, change conversation status to 'open' if it's 'pending'
+                # Always change conversation status to 'open' if it's 'pending'
                 # This ensures the conversation is visible to human agents
                 try:
                     status_endpoint = f"/conversations/{effective_conversation_id}/toggle_status"
@@ -217,7 +215,7 @@ def create_transfer_to_human_tool(
                 
                 logger.info(
                     f"Successfully transferred conversation {effective_conversation_id} to agent {effective_assignee_id}"
-                    + (f" (team: {effective_team_id})" if effective_team_id else "")
+                    + (f" (team: {effective_team_id})" if effective_team_id else " (Unassigned Queue)")
                 )
                 
                 # Extract assignee info from response if available
@@ -227,7 +225,7 @@ def create_transfer_to_human_tool(
                 
                 success_message = (
                     f"Conversation {effective_conversation_id} successfully transferred"
-                    + (f" to {assignee_name}" if assignee_name else f" to agent {effective_assignee_id}" if effective_assignee_id else "")
+                    + (f" to {assignee_name}" if assignee_name else f" to agent {effective_assignee_id}" if effective_assignee_id else " to the Unassigned Queue")
                     + (f" (team: {effective_team_id})" if effective_team_id else "")
                 )
                 
