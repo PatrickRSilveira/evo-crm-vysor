@@ -15,7 +15,7 @@ class GoogleProvider(TTSProvider):
         if not api_key:
             raise ValueError("Google Cloud TTS API key is not configured.")
             
-        voice_id = config.get("voice") or "pt-BR-Neural2-A"
+        voice_id = config.get("voice_id") or config.get("voice") or "pt-BR-Neural2-A"
         
         # Extract languageCode from voice_id if possible (e.g. pt-BR from pt-BR-Neural2-A)
         parts = voice_id.split("-")
