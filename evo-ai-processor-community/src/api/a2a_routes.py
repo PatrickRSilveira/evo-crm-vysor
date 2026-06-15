@@ -1071,21 +1071,23 @@ async def handle_message_send(
     provider = str(llm_config.get("provider") or "").lower()
     model_name = str(agent.model or "").lower()
     
-    # Filter out audio and video files if using OpenRouter to prevent API connection errors
-    if provider == "openrouter" or "openrouter/" in model_name:
-        # OpenRouter's video support is highly experimental and crashes often (especially with Instagram audio-only mp4s)
-        # We also check filename extensions because sometimes CRM sends audio/video as application/octet-stream
-        media_exts = (".mp4", ".ogg", ".aac", ".wav", ".mp3", ".m4a", ".webm", ".avi", ".mov", ".mkv", ".flv", ".wmv")
-        
-        # Whitelist approach: only allow known safe types for OpenRouter to avoid hidden audio/video in octet-stream
-        safe_types = ("image/", "text/", "application/pdf", "application/vnd.", "application/json", "application/xml", "text/")
-        files = [
-            f for f in files 
-            if any(f.content_type.startswith(t) for t in safe_types)
-            and not f.content_type.startswith("audio/") 
-            and not f.content_type.startswith("video/")
-            and not f.filename.lower().endswith(media_exts)
-        ]
+    # Filter out audio and video files to prevent API connection errors
+    # Video/Audio support is highly experimental and crashes often across providers (especially with Instagram audio-only mp4s)
+    # We also check filename extensions because sometimes CRM sends audio/video as application/octet-stream
+    media_exts = (".mp4", ".ogg", ".aac", ".wav", ".mp3", ".m4a", ".webm", ".avi", ".mov", ".mkv", ".flv", ".wmv")
+    
+    # Whitelist approach: only allow known safe types to avoid hidden audio/video in octet-stream
+    safe_types = ("image/", "text/", "application/pdf", "application/vnd.", "application/json", "application/xml")
+    
+    # Let's keep audio/video files ONLY if the model explicitly supports multimodal audio/video natively (e.g., gemini natively directly, not through openrouter wrapper if it crashes). 
+    # Actually, to be 100% safe against the OpenRouter crash, we filter it globally for now since the UI transcribes it anyway.
+    files = [
+        f for f in files 
+        if any(f.content_type.startswith(t) for t in safe_types)
+        and not f.content_type.startswith("audio/") 
+        and not f.content_type.startswith("video/")
+        and not f.filename.lower().endswith(media_exts)
+    ]
         
     # Use default text if only files provided or if message is completely empty
     if (not text or text.strip() == "No content") and files:
@@ -1475,28 +1477,24 @@ async def handle_message_stream(
         for f in files
     )
     
-    # Filter out audio files if using OpenRouter to prevent API connection errors
-    # (OpenRouter models generally don't support audio_url parts, and UI already transcribes speech)
+    # Filter out audio and video files to prevent API connection errors
+    # Video/Audio support is highly experimental and crashes often across providers (especially with Instagram audio-only mp4s)
+    # We also check filename extensions because sometimes CRM sends audio/video as application/octet-stream
+    media_exts = (".mp4", ".ogg", ".aac", ".wav", ".mp3", ".m4a", ".webm", ".avi", ".mov", ".mkv", ".flv", ".wmv")
+    
+    # Whitelist approach: only allow known safe types to avoid hidden audio/video in octet-stream
+    safe_types = ("image/", "text/", "application/pdf", "application/vnd.", "application/json", "application/xml")
+    
+    files = [
+        f for f in files 
+        if any(f.content_type.startswith(t) for t in safe_types)
+        and not f.content_type.startswith("audio/") 
+        and not f.content_type.startswith("video/")
+        and not f.filename.lower().endswith(media_exts)
+    ]
+    
     agent = await get_agent(db, agent_id)
     if agent:
-        agent_config = agent.config or {}
-        llm_config = agent_config.get("llm", {})
-        provider = str(llm_config.get("provider") or "").lower()
-        model_name = str(agent.model or "").lower()
-        if provider == "openrouter" or "openrouter/" in model_name:
-            # OpenRouter's video support is highly experimental and crashes often (especially with Instagram audio-only mp4s)
-            # We also check filename extensions because sometimes CRM sends audio/video as application/octet-stream
-            media_exts = (".mp4", ".ogg", ".aac", ".wav", ".mp3", ".m4a", ".webm", ".avi", ".mov", ".mkv", ".flv", ".wmv")
-            
-            # Whitelist approach: only allow known safe types for OpenRouter to avoid hidden audio/video in octet-stream
-            safe_types = ("image/", "text/", "application/pdf", "application/vnd.", "application/json", "application/xml", "text/")
-            files = [
-                f for f in files 
-                if any(f.content_type.startswith(t) for t in safe_types)
-                and not f.content_type.startswith("audio/") 
-                and not f.content_type.startswith("video/")
-                and not f.filename.lower().endswith(media_exts)
-            ]
     context_id = params.get("contextId", str(uuid.uuid4()))
 
     # Use default text if only files provided or if message is completely empty
