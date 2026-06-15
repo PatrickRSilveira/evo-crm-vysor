@@ -1339,11 +1339,14 @@ async def handle_message_send(
                     cleaned_text = _clean_text_for_tts(final_response)
                     audio_bytes = await provider.generate_speech(cleaned_text, tts_config)
                     
-                    channel = "unknown"
+                    is_instagram = False
                     if "evoai_crm_data" in metadata:
-                        channel = metadata["evoai_crm_data"].get("channel", "unknown")
+                        is_instagram = "instagram" in str(metadata["evoai_crm_data"]).lower()
+                    elif "inboxId" in metadata:
+                        # Fallback if we have other hints
+                        is_instagram = "instagram" in str(metadata).lower()
                     
-                    if "instagram" in str(channel).lower():
+                    if is_instagram:
                         audio_bytes = _convert_to_mp4_aac(audio_bytes)
                         mime_type = "audio/mp4"
                         ext = "mp4"
