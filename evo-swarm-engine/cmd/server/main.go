@@ -60,6 +60,9 @@ func main() {
 	// Nota: Google Drive não implementa Start() de escuta passiva, apenas métodos ativos
 	adapters.NewGoogleDriveAdapter("creds.json")
 
+	// Inicializa o Mirroring Nativo do Chatwoot (PostgreSQL)
+	adapters.NewChatwootMirrorAdapter(events.GlobalEventBus).Start(context.Background())
+
 	// Inicializa o Fiber (Framework Web Ultra-rápido)
 	app := fiber.New(fiber.Config{
 		AppName: "Evo Swarm Engine",
