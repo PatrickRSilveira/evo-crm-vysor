@@ -4,8 +4,10 @@ import (
 	"log"
 	"os"
 
+	"github.com/PatrickRSilveira/evo-swarm-engine/internal/coordinator"
 	"github.com/PatrickRSilveira/evo-swarm-engine/internal/database"
 	"github.com/PatrickRSilveira/evo-swarm-engine/internal/events"
+	"github.com/PatrickRSilveira/evo-swarm-engine/internal/workers"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 )
@@ -25,6 +27,18 @@ func main() {
 
 	// Conecta ao Redis (Memory Engine)
 	database.ConnectRedis()
+
+	// Inicializa o Swarm Coordinator
+	coord := coordinator.NewCoordinator(events.GlobalEventBus)
+	if err := coord.Start(); err != nil {
+		log.Fatalf("Falha ao iniciar o Coordinator: %v", err)
+	}
+
+	// Inicializa o Worker Pool de Agentes
+	agentWorker := workers.NewAgentWorker(events.GlobalEventBus)
+	if err := agentWorker.Start(); err != nil {
+		log.Fatalf("Falha ao iniciar o Agent Worker: %v", err)
+	}
 
 	// Inicializa o Fiber (Framework Web Ultra-rápido)
 	app := fiber.New(fiber.Config{
