@@ -141,19 +141,25 @@ class Whatsapp::Providers::EvolutionGoService < Whatsapp::Providers::BaseService
   end
 
   def toggle_typing_status(phone_number, typing_status)
-    status_map = {
-      Events::Types::CONVERSATION_TYPING_ON => 'composing',
-      Events::Types::CONVERSATION_RECORDING => 'composing', # Evolution Go uses composing + isAudio
-      Events::Types::CONVERSATION_TYPING_OFF => 'paused'
-    }
+    status_str = typing_status.to_s
 
-    presence = status_map[typing_status.to_s] || 'paused'
+    if status_str == 'conversation_recording' || status_str == Events::Types::CONVERSATION_RECORDING
+      presence = 'composing'
+      is_audio = true
+    elsif status_str == 'conversation_typing_on' || status_str == Events::Types::CONVERSATION_TYPING_ON
+      presence = 'composing'
+      is_audio = false
+    else
+      presence = 'paused'
+      is_audio = false
+    end
+
     clean_number = phone_number.delete('+')
 
     body = {
       number: clean_number,
       state: presence,
-      isAudio: typing_status.to_s == Events::Types::CONVERSATION_RECORDING
+      isAudio: is_audio
     }
 
     response = HTTParty.post(
