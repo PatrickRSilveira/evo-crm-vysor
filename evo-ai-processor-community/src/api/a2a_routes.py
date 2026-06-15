@@ -1129,7 +1129,8 @@ async def handle_message_send(
             params["metadata"] = metadata
         
         if respond_in_audio == "always" or (respond_in_audio == "when_client_asks" and has_audio):
-            logger.info("🔊 Agent is configured to respond in audio, delegating to agent instructions...")
+            text += "\n\n[SYSTEM DIRECTIVE]: You must call the `text_to_speech` tool using the exact text of your response to generate the audio. Do not just reply with text, you MUST execute the tool call."
+            logger.info("🔊 Appended TTS tool directive because user sent audio or agent is configured to always respond in audio")
 
     logger.info(f"📝 Extracted text: {text}")
     logger.info(f"📎 Extracted files: {len(files)}")
@@ -1568,7 +1569,8 @@ async def handle_message_stream(
                 has_audio = metadata.get("has_audio", False) or has_audio_in_files
             
             if respond_in_audio == "always" or (respond_in_audio == "when_client_asks" and has_audio):
-                logger.info("🔊 Agent is configured to respond in audio, delegating to agent instructions...")
+                text += "\n\n[SYSTEM DIRECTIVE]: You must call the `text_to_speech` tool using the exact text of your response to generate the audio. Do not just reply with text, you MUST execute the tool call."
+                logger.info("🔊 Appended TTS tool directive in stream because user sent audio or agent is configured to always respond in audio")
 
     # Extract and combine conversation history
     conversation_history = await extract_conversation_history(str(agent_id), context_id, db=db)
