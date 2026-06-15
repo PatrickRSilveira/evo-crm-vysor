@@ -167,7 +167,7 @@ async def create_new_session(
     
     if not is_agent_bot and not current_user:
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_401_UNAUTHORIZED),
             message="Authentication required",
             status_code=status.HTTP_401_UNAUTHORIZED
@@ -179,7 +179,7 @@ async def create_new_session(
     agent = await agent_service.get_agent(db, agent_id)
     if not agent:
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_404_NOT_FOUND),
             message="Agent not found",
             status_code=status.HTTP_404_NOT_FOUND
@@ -270,7 +270,7 @@ async def create_new_session(
             f"❌ Error creating session {session_id}: {str(create_error)}"
         )
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Error creating session: {str(create_error)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -366,7 +366,7 @@ async def get_agent_sessions(
     agent = await agent_service.get_agent(db, agent_id)
     if not agent:
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_404_NOT_FOUND),
             message="Agent not found",
             status_code=status.HTTP_404_NOT_FOUND
@@ -524,7 +524,7 @@ async def get_session(
     session = await get_session_by_id(session_service, session_id)
     if not session:
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_404_NOT_FOUND),
             message="Session not found",
             status_code=status.HTTP_404_NOT_FOUND
@@ -577,7 +577,7 @@ async def get_agent_messages(
     session = await get_session_by_id(session_service, session_id, db=db)
     if not session:
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_404_NOT_FOUND),
             message="Session not found",
             status_code=status.HTTP_404_NOT_FOUND
@@ -604,7 +604,7 @@ async def get_agent_messages(
 
     if not app_name or not user_id:
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_400_BAD_REQUEST),
             message="Session missing app_name or user_id",
             status_code=status.HTTP_400_BAD_REQUEST
@@ -782,7 +782,7 @@ async def get_agent_messages(
     except Exception as e:
         logger.error(f"Error retrieving session messages: {str(e)}", exc_info=True)
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message="Failed to retrieve session messages. Please try again or contact support if the issue persists.",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -865,7 +865,7 @@ async def get_session_metadata_endpoint(
     session = await get_session_by_id(session_service, session_id)
     if not session:
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_404_NOT_FOUND),
             message="Session not found",
             status_code=status.HTTP_404_NOT_FOUND
@@ -922,7 +922,7 @@ async def update_session_metadata_endpoint(
     session = await get_session_by_id(session_service, session_id)
     if not session:
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_404_NOT_FOUND),
             message="Session not found",
             status_code=status.HTTP_404_NOT_FOUND
@@ -993,7 +993,7 @@ async def delete_session_metadata_endpoint(
     session = await get_session_by_id(session_service, session_id)
     if not session:
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_404_NOT_FOUND),
             message="Session not found",
             status_code=status.HTTP_404_NOT_FOUND
@@ -1021,7 +1021,7 @@ async def delete_session_metadata_endpoint(
 
     if not deleted:
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_404_NOT_FOUND),
             message="Session metadata not found or you don't have permission to delete it",
             status_code=status.HTTP_404_NOT_FOUND
@@ -1071,7 +1071,7 @@ async def create_session_sync(
     agent = await get_agent(db, str(agent_id))
     if not agent:
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_404_NOT_FOUND),
             message=f"Agent {agent_id} not found",
             status_code=status.HTTP_404_NOT_FOUND
@@ -1138,7 +1138,7 @@ async def create_session_sync(
         db.rollback()
         logger.error(f"[Sync] ❌ Error creating session {session_id}: {str(create_error)}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Error creating session: {str(create_error)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -1191,7 +1191,7 @@ async def delete_session_sync(
     except Exception as e:
         logger.error(f"[Sync] ❌ Error deleting session {session_id}: {str(e)}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Error deleting session: {str(e)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -1252,7 +1252,7 @@ async def create_session_event(
             parts = session_id.rsplit('_', 1)
             if len(parts) != 2:
                 return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_400_BAD_REQUEST),
             message=f"Invalid session_id format: {session_id}. Expected format: {{conversation_uuid}}_{{agent_id}}",
             status_code=status.HTTP_400_BAD_REQUEST
@@ -1264,7 +1264,7 @@ async def create_session_event(
                 agent_id = uuid.UUID(agent_id_str)
             except ValueError:
                 return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_400_BAD_REQUEST),
             message=f"Invalid agent_id in session_id: {agent_id_str}",
             status_code=status.HTTP_400_BAD_REQUEST
@@ -1274,7 +1274,7 @@ async def create_session_event(
             agent = await get_agent(db, agent_id)
             if not agent:
                 return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_404_NOT_FOUND),
             message=f"Agent {agent_id} not found for session {session_id}",
             status_code=status.HTTP_404_NOT_FOUND
@@ -1316,7 +1316,7 @@ async def create_session_event(
                     db_session = db.query(SessionModel).filter(SessionModel.id == session_id).first()
                     if not db_session:
                         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Failed to create or retrieve session {session_id}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -1340,7 +1340,7 @@ async def create_session_event(
                 )
                 if not session:
                     return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Failed to create or retrieve ADK session {session_id}: {str(adk_error)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -1362,7 +1362,7 @@ async def create_session_event(
         agent = await get_agent(db, agent_id)
         if not agent:
             return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_404_NOT_FOUND),
             message=f"Agent {agent_id} not found for session {session_id}",
             status_code=status.HTTP_404_NOT_FOUND
@@ -1406,7 +1406,7 @@ async def create_session_event(
     except Exception as e:
         logger.error(f"❌ Error creating event in session {session_id}: {str(e)}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Error creating event: {str(e)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR

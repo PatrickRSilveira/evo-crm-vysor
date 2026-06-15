@@ -98,7 +98,7 @@ async def list_available_tools(
     except Exception as e:
         logger.error(f"Error listing available tools: {str(e)}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Error listing available tools: {str(e)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -126,7 +126,7 @@ async def get_tool_details(
 
         if not tool:
             return error_response(
-                request=request,
+                
                 code=map_status_to_error_code(status.HTTP_404_NOT_FOUND),
                 message=f"Tool not found: {tool_id}",
                 status_code=status.HTTP_404_NOT_FOUND
@@ -140,7 +140,7 @@ async def get_tool_details(
     except Exception as e:
         logger.error(f"Error getting tool details for {tool_id}: {str(e)}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Error getting tool details: {str(e)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -173,7 +173,7 @@ async def list_tool_categories(
     except Exception as e:
         logger.error(f"Error listing tool categories: {str(e)}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Error listing tool categories: {str(e)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -206,7 +206,7 @@ async def reload_tools_config(
             )
         else:
             return error_response(
-                request=request,
+                
                 code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
                 message="Failed to reload tools configuration",
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -214,7 +214,7 @@ async def reload_tools_config(
     except Exception as e:
         logger.error(f"Error reloading tools configuration: {str(e)}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Error reloading tools configuration: {str(e)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR

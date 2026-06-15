@@ -179,7 +179,7 @@ async def generate_authorization(
     except Exception as e:
         logger.error(f"Error generating authorization URL: {e}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Failed to generate authorization URL: {str(e)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -218,7 +218,7 @@ async def complete_authorization(
 
         if not result.get("success"):
             return error_response(
-                request=request,
+                
                 code=map_status_to_error_code(status.HTTP_400_BAD_REQUEST),
                 message=result.get("error", "Unknown error"),
                 status_code=status.HTTP_400_BAD_REQUEST
@@ -237,7 +237,7 @@ async def complete_authorization(
     except ValueError as e:
         logger.error(f"Validation error in callback: {e}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_422_UNPROCESSABLE_ENTITY),
             message=str(e),
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -245,7 +245,7 @@ async def complete_authorization(
     except Exception as e:
         logger.error(f"Error completing authorization: {e}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Failed to complete authorization: {str(e)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -263,6 +263,7 @@ async def complete_authorization(
 )
 async def get_spreadsheets(
     agent_id: str,
+    request: Request,
     service: GoogleSheetsService = Depends(get_google_sheets_service),
     db: Session = Depends(get_db),
 ):
@@ -289,7 +290,7 @@ async def get_spreadsheets(
     except ValueError as e:
         logger.error(f"No credentials found: {e}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_404_NOT_FOUND),
             message="Google Sheets not connected",
             status_code=status.HTTP_404_NOT_FOUND
@@ -297,7 +298,7 @@ async def get_spreadsheets(
     except Exception as e:
         logger.error(f"Error fetching spreadsheets: {e}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Failed to fetch spreadsheets: {str(e)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -339,7 +340,7 @@ async def save_configuration(
     except Exception as e:
         logger.error(f"Error saving configuration: {e}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Failed to save configuration: {str(e)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -378,7 +379,7 @@ async def disconnect(
     except Exception as e:
         logger.error(f"Error disconnecting Google Sheets: {e}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Failed to disconnect Google Sheets: {str(e)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -425,7 +426,7 @@ async def oauth_callback(
 
         if not agent_id:
             return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_400_BAD_REQUEST),
             message="Invalid state parameter: missing agent_id",
             status_code=status.HTTP_400_BAD_REQUEST
@@ -440,7 +441,7 @@ async def oauth_callback(
         )
 
         if not result.get("success"):
-            return error_response(request=request, code=map_status_to_error_code(status.HTTP_400_BAD_REQUEST),
+            return error_response( code=map_status_to_error_code(status.HTTP_400_BAD_REQUEST),
                 message=result.get("error", "Unknown error"),
                 status_code=status.HTTP_400_BAD_REQUEST
             )
@@ -458,7 +459,7 @@ async def oauth_callback(
     except ValueError as e:
         logger.error(f"Validation error in callback: {e}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_422_UNPROCESSABLE_ENTITY),
             message=str(e),
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -466,7 +467,7 @@ async def oauth_callback(
     except Exception as e:
         logger.error(f"Error completing authorization: {e}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Failed to complete authorization: {str(e)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR

@@ -98,7 +98,7 @@ async def verify_api_key(db: Session, request: Request, x_api_key: str) -> Union
     """Verifies API key against agent config. Returns True if valid, JSONResponse if error."""
     if not x_api_key:
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_401_UNAUTHORIZED),
             message="API key not provided",
             status_code=status.HTTP_401_UNAUTHORIZED
@@ -110,7 +110,7 @@ async def verify_api_key(db: Session, request: Request, x_api_key: str) -> Union
 
     if not result:
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_401_UNAUTHORIZED),
             message="Invalid API key",
             status_code=status.HTTP_401_UNAUTHORIZED
@@ -135,7 +135,7 @@ def validate_external_sharing_preconditions(agent: Agent, request: Request) -> U
     publish_state = external_sharing.get('publish_state', 'draft')
     if publish_state != 'published':
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_403_FORBIDDEN),
             message=f"Agent is not published. Current state: {publish_state}",
             status_code=status.HTTP_403_FORBIDDEN,
@@ -150,7 +150,7 @@ def validate_external_sharing_preconditions(agent: Agent, request: Request) -> U
     allowlist = external_sharing.get('allowlist', [])
     if not allowlist:
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_403_FORBIDDEN),
             message="External sharing allowlist is empty",
             status_code=status.HTTP_403_FORBIDDEN,
@@ -201,7 +201,7 @@ def validate_external_sharing_preconditions(agent: Agent, request: Request) -> U
     if not client_host:
         logger.warning("⚠️ Could not determine client host/IP for allowlist validation")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_403_FORBIDDEN),
             message="Could not determine client origin for allowlist validation",
             status_code=status.HTTP_403_FORBIDDEN,
@@ -244,7 +244,7 @@ def validate_external_sharing_preconditions(agent: Agent, request: Request) -> U
     if not client_allowed:
         logger.warning(f"⚠️ Access denied: {client_host} not in allowlist {allowlist}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_403_FORBIDDEN),
             message="Access denied: client not in allowlist",
             status_code=status.HTTP_403_FORBIDDEN,
@@ -259,7 +259,7 @@ def validate_external_sharing_preconditions(agent: Agent, request: Request) -> U
     callback_url = external_sharing.get('callback_url', '')
     if not callback_url or not callback_url.strip():
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message="External sharing callback URL is not configured",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -274,7 +274,7 @@ def validate_external_sharing_preconditions(agent: Agent, request: Request) -> U
         parsed_callback = urlparse(callback_url)
         if parsed_callback.scheme != 'https':
             return error_response(
-                request=request,
+                
                 code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
                 message="Callback URL must use HTTPS",
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -285,7 +285,7 @@ def validate_external_sharing_preconditions(agent: Agent, request: Request) -> U
             )
     except Exception as e:
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Invalid callback URL format: {str(e)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -735,7 +735,7 @@ async def process_a2a_message(
     agent = await get_agent(db, agent_id)
     if not agent:
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_404_NOT_FOUND),
             message="Agent not found",
             status_code=status.HTTP_404_NOT_FOUND
@@ -753,7 +753,7 @@ async def process_a2a_message(
         jsonrpc = request_body.get("jsonrpc")
         if jsonrpc != "2.0":
             return error_response(
-                request=request,
+                
                 code=map_status_to_error_code(status.HTTP_400_BAD_REQUEST),
                 message="Invalid JSON-RPC version",
                 status_code=status.HTTP_400_BAD_REQUEST
@@ -790,7 +790,7 @@ async def process_a2a_message(
         else:
             # JSON-RPC error for method not found
             return error_response(
-                request=request,
+                
                 code=map_status_to_error_code(status.HTTP_400_BAD_REQUEST),
                 message="Method not found",
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -819,7 +819,7 @@ async def process_a2a_message(
 
     except json.JSONDecodeError:
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_400_BAD_REQUEST),
             message="Invalid JSON",
             status_code=status.HTTP_400_BAD_REQUEST
@@ -827,7 +827,7 @@ async def process_a2a_message(
     except Exception as e:
         logger.error(f"Error processing A2A request: {e}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Error processing A2A request: {str(e)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -941,7 +941,7 @@ async def handle_message_send(
     message = params.get("message")
     if not message:
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_400_BAD_REQUEST),
             message="Invalid params",
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -968,7 +968,7 @@ async def handle_message_send(
     agent = await get_agent(db, agent_id)
     if not agent:
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_404_NOT_FOUND),
             message="Agent not found",
             status_code=status.HTTP_404_NOT_FOUND,
@@ -999,7 +999,7 @@ async def handle_message_send(
         # Validate push notification config according to A2A spec (support both url and webhookUrl)
         if not webhook_url:
             return error_response(
-                request=request,
+                
                 code=map_status_to_error_code(status.HTTP_400_BAD_REQUEST),
                 message="Invalid params",
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -1019,7 +1019,7 @@ async def handle_message_send(
         # Validate HTTPS requirement (A2A spec: prevents SSRF attacks)
         if not webhook_url.startswith("https://"):
             return error_response(
-                request=request,
+                
                 code=map_status_to_error_code(status.HTTP_400_BAD_REQUEST),
                 message="Invalid params",
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -1379,7 +1379,7 @@ async def handle_message_send(
     except Exception as e:
         logger.error(f"❌ Agent execution error: {e}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message="Agent execution failed",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -1590,7 +1590,7 @@ async def get_agent_card(
     agent = await get_agent(db, agent_id)
     if not agent:
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_404_NOT_FOUND),
             message="Agent not found",
             status_code=status.HTTP_404_NOT_FOUND
@@ -1729,7 +1729,7 @@ async def list_agent_sessions(
     agent = await get_agent(db, agent_id)
     if not agent:
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_404_NOT_FOUND),
             message="Agent not found",
             status_code=status.HTTP_404_NOT_FOUND
@@ -1764,7 +1764,7 @@ async def list_agent_sessions(
     except Exception as e:
         logger.error(f"❌ Error listing sessions: {e}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Error listing sessions: {str(e)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -1792,7 +1792,7 @@ async def get_session_history(
     agent = await get_agent(db, agent_id)
     if not agent:
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_404_NOT_FOUND),
             message="Agent not found",
             status_code=status.HTTP_404_NOT_FOUND
@@ -1817,7 +1817,7 @@ async def get_session_history(
     except Exception as e:
         logger.error(f"❌ Error getting session history: {e}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Error getting session history: {str(e)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -1847,7 +1847,7 @@ async def get_conversation_history(
     agent = await get_agent(db, agent_id)
     if not agent:
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_404_NOT_FOUND),
             message="Agent not found",
             status_code=status.HTTP_404_NOT_FOUND
@@ -1860,7 +1860,7 @@ async def get_conversation_history(
         jsonrpc = request_body.get("jsonrpc")
         if jsonrpc != "2.0":
             return error_response(
-                request=request,
+                
                 code=map_status_to_error_code(status.HTTP_400_BAD_REQUEST),
                 message="Invalid JSON-RPC version",
                 status_code=status.HTTP_400_BAD_REQUEST
@@ -1873,7 +1873,7 @@ async def get_conversation_history(
         context_id = params.get("contextId") or params.get("external_id")
         if not context_id:
             return error_response(
-                request=request,
+                
                 code=map_status_to_error_code(status.HTTP_400_BAD_REQUEST),
                 message="Invalid params",
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -1970,7 +1970,7 @@ async def get_conversation_history(
 
     except json.JSONDecodeError:
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_400_BAD_REQUEST),
             message="Invalid JSON",
             status_code=status.HTTP_400_BAD_REQUEST
@@ -1978,7 +1978,7 @@ async def get_conversation_history(
     except Exception as e:
         logger.error(f"❌ Error retrieving conversation history: {e}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Error retrieving conversation history: {str(e)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -2027,7 +2027,7 @@ async def send_push_notification(
 
     if not webhook_url:
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_400_BAD_REQUEST),
             message="Invalid params",
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -2045,7 +2045,7 @@ async def send_push_notification(
     # Validate HTTPS requirement (A2A spec: url MUST be HTTPS for security to prevent SSRF)
     if not webhook_url.startswith("https://"):
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_400_BAD_REQUEST),
             message="Invalid params",
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -2190,7 +2190,7 @@ async def send_push_notification(
     except httpx.TimeoutException:
         logger.error(f"❌ Push notification timeout (30s) to {webhook_url}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message="Push notification timeout",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -2208,7 +2208,7 @@ async def send_push_notification(
     except httpx.RequestError as e:
         logger.error(f"❌ Push notification request error to {webhook_url}: {e}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message="Push notification request error",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -2226,7 +2226,7 @@ async def send_push_notification(
     except Exception as e:
         logger.error(f"❌ Push notification unexpected error to {webhook_url}: {e}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message="Push notification error",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -2253,7 +2253,7 @@ async def handle_tasks_get(
         task_id = params.get("taskId")
         if not task_id:
             return error_response(
-                request=request,
+                
                 code=map_status_to_error_code(status.HTTP_400_BAD_REQUEST),
                 message="Invalid params",
                 status_code=status.HTTP_400_BAD_REQUEST,

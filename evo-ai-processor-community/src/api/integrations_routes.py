@@ -176,7 +176,7 @@ async def get_all_configurations(
         
         if not user_token:
             return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_401_UNAUTHORIZED),
             message="Authentication token required",
             status_code=status.HTTP_401_UNAUTHORIZED
@@ -263,7 +263,7 @@ async def get_all_configurations(
     except Exception as e:
         logger.error(f"Error getting all configurations: {e}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Failed to get configurations: {str(e)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -299,7 +299,7 @@ async def upsert_integration(
         user_token = auth_header.replace("Bearer ", "") if auth_header.startswith("Bearer ") else ""
         if not user_token:
             return error_response(
-                request=request,
+                
                 code=map_status_to_error_code(status.HTTP_401_UNAUTHORIZED),
                 message="Authentication token required",
                 status_code=status.HTTP_401_UNAUTHORIZED
@@ -315,7 +315,7 @@ async def upsert_integration(
 
         if not success:
             return error_response(
-                request=request,
+                
                 code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
                 message=f"Failed to upsert integration {provider}",
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -332,7 +332,7 @@ async def upsert_integration(
     except Exception as e:
         logger.error(f"Error upserting integration: {e}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Failed to upsert integration: {str(e)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -364,7 +364,7 @@ async def delete_integration(
         user_token = auth_header.replace("Bearer ", "") if auth_header.startswith("Bearer ") else ""
         if not user_token:
             return error_response(
-                request=request,
+                
                 code=map_status_to_error_code(status.HTTP_401_UNAUTHORIZED),
                 message="Authentication token required",
                 status_code=status.HTTP_401_UNAUTHORIZED
@@ -394,7 +394,7 @@ async def delete_integration(
         logger.error(f"Error deleting integration: {e}")
         db.rollback()
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Failed to delete integration: {str(e)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR

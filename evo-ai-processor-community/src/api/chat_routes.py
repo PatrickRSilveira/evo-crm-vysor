@@ -658,7 +658,7 @@ async def chat(
 
     except AgentNotFoundError as e:
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_404_NOT_FOUND),
             message=str(e),
             status_code=status.HTTP_404_NOT_FOUND
@@ -666,7 +666,7 @@ async def chat(
     except MemoryLimitExceeded as e:
         logger.warning(f"Memory limit exceeded for user {user_id}: {str(e)}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_402_PAYMENT_REQUIRED),
             message=str(e),
             status_code=status.HTTP_402_PAYMENT_REQUIRED
@@ -674,14 +674,14 @@ async def chat(
     except SessionLimitExceeded as e:
         logger.warning(f"Session limit exceeded for user {user_id}: {str(e)}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_402_PAYMENT_REQUIRED),
             message=str(e),
             status_code=status.HTTP_402_PAYMENT_REQUIRED
         )
     except Exception as e:
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=str(e),
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR

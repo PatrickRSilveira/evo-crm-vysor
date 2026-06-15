@@ -153,7 +153,7 @@ async def discover_oauth(
     except Exception as e:
         logger.error(f"Error discovering OAuth requirements: {e}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Failed to discover OAuth requirements: {str(e)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -193,7 +193,7 @@ async def generate_authorization(
     except Exception as e:
         logger.error(f"Error generating authorization URL: {e}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Failed to generate authorization URL: {str(e)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -229,7 +229,7 @@ async def complete_authorization(
         )
 
         if not result.get("success"):
-            return error_response(request=request, code=map_status_to_error_code(status.HTTP_400_BAD_REQUEST),
+            return error_response( code=map_status_to_error_code(status.HTTP_400_BAD_REQUEST),
                 message=result.get("error", "Unknown error"),
                 status_code=status.HTTP_400_BAD_REQUEST
             )
@@ -242,7 +242,7 @@ async def complete_authorization(
     except ValueError as e:
         logger.error(f"Validation error in callback: {e}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_422_UNPROCESSABLE_ENTITY),
             message=str(e),
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -250,7 +250,7 @@ async def complete_authorization(
     except Exception as e:
         logger.error(f"Error completing authorization: {e}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Failed to complete authorization: {str(e)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -322,7 +322,7 @@ async def get_configuration(
     except Exception as e:
         logger.error(f"Error getting PayPal configuration: {e}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Failed to get configuration: {str(e)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -381,7 +381,7 @@ async def save_configuration(
         
         if not stored_config:
             return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_404_NOT_FOUND),
             message="PayPal integration not connected. Please connect first via OAuth.",
             status_code=status.HTTP_404_NOT_FOUND
@@ -410,7 +410,7 @@ async def save_configuration(
         
         if not success:
             return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message="Failed to save configuration to database",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -430,7 +430,7 @@ async def save_configuration(
     except Exception as e:
         logger.error(f"Error saving PayPal configuration: {e}", exc_info=True)
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Failed to save configuration: {str(e)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -459,7 +459,7 @@ async def disconnect(
     except Exception as e:
         logger.error(f"Error disconnecting PayPal: {e}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Failed to disconnect: {str(e)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -503,7 +503,7 @@ async def oauth_callback(
 
         if not agent_id:
             return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_400_BAD_REQUEST),
             message="Invalid state parameter: missing agent_id",
             status_code=status.HTTP_400_BAD_REQUEST
@@ -521,7 +521,7 @@ async def oauth_callback(
 
         if not client_id or not client_secret or not redirect_uri:
             return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_400_BAD_REQUEST),
             message="PayPal OAuth credentials not configured. ",
             status_code=status.HTTP_400_BAD_REQUEST
@@ -548,7 +548,7 @@ async def oauth_callback(
         )
 
         if not result.get("success"):
-            return error_response(request=request, code=map_status_to_error_code(status.HTTP_400_BAD_REQUEST),
+            return error_response( code=map_status_to_error_code(status.HTTP_400_BAD_REQUEST),
                 message=result.get("error", "Unknown error"),
                 status_code=status.HTTP_400_BAD_REQUEST
             )
@@ -561,7 +561,7 @@ async def oauth_callback(
     except ValueError as e:
         logger.error(f"Validation error in callback: {e}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_422_UNPROCESSABLE_ENTITY),
             message=str(e),
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -569,7 +569,7 @@ async def oauth_callback(
     except Exception as e:
         logger.error(f"Error completing authorization: {e}")
         return error_response(
-            request=request,
+            
             code=map_status_to_error_code(status.HTTP_500_INTERNAL_SERVER_ERROR),
             message=f"Failed to complete authorization: {str(e)}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
