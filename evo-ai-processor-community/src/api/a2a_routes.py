@@ -1045,7 +1045,11 @@ async def handle_message_send(
     files = await extract_files_from_message_async(message)
     
     # Check if the user sent an audio message (detect before stripping)
-    has_audio_in_files = any(f.content_type.startswith("audio/") for f in files)
+    has_audio_in_files = any(
+        f.content_type.startswith("audio/") or 
+        (f.content_type.startswith("video/") and any(kw in f.filename.lower() for kw in ["audio", "voice", "ptt", "record"]))
+        for f in files
+    )
     
     # Filter out audio files if using OpenRouter to prevent API connection errors
     # (OpenRouter models generally don't support audio_url parts, and UI already transcribes speech)
@@ -1054,9 +1058,10 @@ async def handle_message_send(
     provider = str(llm_config.get("provider") or "").lower()
     model_name = str(agent.model or "").lower()
     
-    # Filter out audio files if using OpenRouter to prevent API connection errors
+    # Filter out audio and video files if using OpenRouter to prevent API connection errors
     if provider == "openrouter" or "openrouter/" in model_name:
-        files = [f for f in files if not f.content_type.startswith("audio/")]
+        # OpenRouter's video support is highly experimental and crashes often (especially with Instagram audio-only mp4s)
+        files = [f for f in files if not f.content_type.startswith("audio/") and not f.content_type.startswith("video/")]
         
     # Use default text if only files provided or if message is completely empty
     if (not text or text.strip() == "No content") and files:
@@ -1438,7 +1443,11 @@ async def handle_message_stream(
     text = extract_text_from_message(message)
     files = await extract_files_from_message_async(message)
     # Check if the user sent an audio message (detect before stripping)
-    has_audio_in_files = any(f.content_type.startswith("audio/") for f in files)
+    has_audio_in_files = any(
+        f.content_type.startswith("audio/") or 
+        (f.content_type.startswith("video/") and any(kw in f.filename.lower() for kw in ["audio", "voice", "ptt", "record"]))
+        for f in files
+    )
     
     # Filter out audio files if using OpenRouter to prevent API connection errors
     # (OpenRouter models generally don't support audio_url parts, and UI already transcribes speech)
@@ -1449,7 +1458,8 @@ async def handle_message_stream(
         provider = str(llm_config.get("provider") or "").lower()
         model_name = str(agent.model or "").lower()
         if provider == "openrouter" or "openrouter/" in model_name:
-            files = [f for f in files if not f.content_type.startswith("audio/")]
+            # OpenRouter's video support is highly experimental and crashes often (especially with Instagram audio-only mp4s)
+            files = [f for f in files if not f.content_type.startswith("audio/") and not f.content_type.startswith("video/")]
     context_id = params.get("contextId", str(uuid.uuid4()))
 
     # Use default text if only files provided or if message is completely empty
