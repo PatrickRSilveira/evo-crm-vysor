@@ -55,7 +55,7 @@ func (a *GenericAgent) Start() error {
 		Skills:      []string{"dynamic_agent"},
 	})
 
-	_, err := a.EventBus.Conn.QueueSubscribe(a.Subject, "generic_agent_group", a.handleTask)
+	_, err = a.EventBus.Conn.QueueSubscribe(a.Subject, "generic_agent_group", a.handleTask)
 	return err
 }
 

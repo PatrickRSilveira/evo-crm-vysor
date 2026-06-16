@@ -1,8 +1,10 @@
 package middleware
 
 import (
+	"os"
 	"strings"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/PatrickRSilveira/evo-swarm-engine/internal/domain/models"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
@@ -42,13 +44,27 @@ func EvoAuthMiddleware(db *gorm.DB) fiber.Handler {
 		err := db.Where("key = ?", apiKeyStr).First(&keyRow).Error
 
 		if err != nil {
-			// Não encontrou na tabela APIKey. Aqui seria o fallback para validação de assinatura JWT (User Auth).
-			// Para MVP/Paridade, rejeitamos.
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error":   "Unauthorized",
-				"code":    "ERR_INVALID_API_KEY",
-				"message": "API Key inválida ou não encontrada.",
+			// Não encontrou na tabela APIKey. Tenta validar como JWT (User Auth).
+			secretKey := os.Getenv("JWT_SECRET_KEY")
+			if secretKey == "" {
+				secretKey = "default_secret" // fallback
+			}
+			
+			token, jwtErr := jwt.Parse(apiKeyStr, func(token *jwt.Token) (interface{}, error) {
+				return []byte(secretKey), nil
 			})
+			
+			if jwtErr != nil || !token.Valid {
+				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+					"error":   "Unauthorized",
+					"code":    "ERR_INVALID_TOKEN",
+					"message": "Token de acesso (API Key ou JWT) inválido.",
+				})
+			}
+			
+			// É um JWT válido, permite o acesso ao painel do frontend
+			c.Locals("is_user_auth", true)
+			return c.Next()
 		}
 
 		// 4. Se encontrou, preenchemos o Agent Context fortemente tipado
