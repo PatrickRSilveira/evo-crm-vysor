@@ -1,10 +1,11 @@
 package middleware
 
 import (
+	"net/http"
 	"os"
 	"strings"
+	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/PatrickRSilveira/evo-swarm-engine/internal/domain/models"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
@@ -44,27 +45,40 @@ func EvoAuthMiddleware(db *gorm.DB) fiber.Handler {
 		err := db.Where("key = ?", apiKeyStr).First(&keyRow).Error
 
 		if err != nil {
-			// Não encontrou na tabela APIKey. Tenta validar como JWT (User Auth).
-			secretKey := os.Getenv("JWT_SECRET_KEY")
-			if secretKey == "" {
-				secretKey = "default_secret" // fallback
+			// Não encontrou na tabela APIKey. Fallback para validação remota (User Auth / Evo Auth).
+			authBaseUrl := os.Getenv("EVO_AUTH_BASE_URL")
+			if authBaseUrl == "" {
+				authBaseUrl = "http://evo_auth:3001" // default docker-compose service
 			}
-			
-			token, jwtErr := jwt.Parse(apiKeyStr, func(token *jwt.Token) (interface{}, error) {
-				return []byte(secretKey), nil
+
+			// Tenta validar no Evo Auth Service
+			req, reqErr := http.NewRequest("POST", authBaseUrl+"/api/v1/auth/validate", nil)
+			if reqErr == nil {
+				req.Header.Set("Authorization", "Bearer "+apiKeyStr)
+				req.Header.Set("Content-Type", "application/json")
+				req.Header.Set("Accept", "application/json")
+
+				client := &http.Client{Timeout: 5 * time.Second}
+				resp, respErr := client.Do(req)
+
+				if respErr == nil && resp.StatusCode == 200 {
+					// Token validado com sucesso pelo Evo Auth!
+					c.Locals("is_user_auth", true)
+					if resp != nil {
+						resp.Body.Close()
+					}
+					return c.Next()
+				}
+				if resp != nil {
+					resp.Body.Close()
+				}
+			}
+
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error":   "Unauthorized",
+				"code":    "ERR_INVALID_TOKEN",
+				"message": "Token de acesso (API Key ou Bearer) inválido ou expirado.",
 			})
-			
-			if jwtErr != nil || !token.Valid {
-				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-					"error":   "Unauthorized",
-					"code":    "ERR_INVALID_TOKEN",
-					"message": "Token de acesso (API Key ou JWT) inválido.",
-				})
-			}
-			
-			// É um JWT válido, permite o acesso ao painel do frontend
-			c.Locals("is_user_auth", true)
-			return c.Next()
 		}
 
 		// 4. Se encontrou, preenchemos o Agent Context fortemente tipado
