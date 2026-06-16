@@ -62,13 +62,70 @@ func (a *EvolutionAdapter) RegisterWebhookRoute(app *fiber.App) {
 		eventStr, _ := payload["event"].(string)
 		log.Printf("📥 [EvolutionWebhook] Evento Recebido: '%s' (payload completo: %+v)", eventStr, payload)
 
-		// Validação básica se é evento de mensagem nova via WhatsApp
-		if eventStr == "messages.upsert" {
+		// Validação básica se é evento de mensagem nova via WhatsApp (Suporta Evolution v1 e v2)
+		if eventStr == "messages.upsert" || eventStr == "Message" {
 			log.Println("📥 [EvolutionWebhook] Nova mensagem do WhatsApp recebida! Disparando para o Swarm...")
 
+			// Extração segura de Sender e Content
+			sender := ""
+			content := ""
+			
+			if data, ok := payload["data"].(map[string]interface{}); ok {
+				// Formato v2 ("Message")
+				if info, ok := data["Info"].(map[string]interface{}); ok {
+					if s, ok := info["Sender"].(string); ok {
+						sender = s
+					}
+				}
+				if msg, ok := data["Message"].(map[string]interface{}); ok {
+					if c, ok := msg["conversation"].(string); ok {
+						content = c
+					} else if extMsg, ok := msg["extendedTextMessage"].(map[string]interface{}); ok {
+						if c, ok := extMsg["text"].(string); ok {
+							content = c
+						}
+					}
+				}
+				
+				// Formato v1 ("messages.upsert")
+				if msgs, ok := data["messages"].([]interface{}); ok && len(msgs) > 0 {
+					if firstMsg, ok := msgs[0].(map[string]interface{}); ok {
+						if pushName, ok := firstMsg["pushName"].(string); ok && sender == "" {
+							sender = pushName // Fallback
+						}
+						if key, ok := firstMsg["key"].(map[string]interface{}); ok && sender == "" {
+							if s, ok := key["remoteJid"].(string); ok {
+								sender = s
+							}
+						}
+						if msg, ok := firstMsg["message"].(map[string]interface{}); ok {
+							if c, ok := msg["conversation"].(string); ok {
+								content = c
+							} else if extMsg, ok := msg["extendedTextMessage"].(map[string]interface{}); ok {
+								if c, ok := extMsg["text"].(string); ok {
+									content = c
+								}
+							}
+						}
+					}
+				}
+			}
+
+			// Se não conseguiu extrair, usa raw JSON para debug
+			if content == "" {
+				rawBytes, _ := json.Marshal(payload)
+				content = "[Raw Payload] " + string(rawBytes)
+			}
+			if sender == "" {
+				sender = "unknown_whatsapp_sender"
+			}
+
 			eventData, _ := json.Marshal(map[string]interface{}{
-				"source":  "whatsapp_evolution",
-				"payload": payload,
+				"source":   "whatsapp_evolution",
+				"content":  content,
+				"sender":   sender,
+				"agent_id": "", // Evolution nativo não sabe o AgentID, Coordinator fará fallback
+				"payload":  payload,
 			})
 
 			// Dispara evento indicando Input do Usuário
