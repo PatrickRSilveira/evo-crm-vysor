@@ -69,15 +69,20 @@ func (a *GenericAgent) handleTask(msg *nats.Msg) {
 	log.Printf("🛠️ [GenericAgent] [%s] Processando Tarefa: [%s]", a.Model.Name, event.TaskID)
 
 	var incomingData struct {
-		Source    string `json:"source"`
-		Sender    string `json:"sender"`
-		ContextID string `json:"context_id"`
-		Content   string `json:"content"`
+		Source         string `json:"source"`
+		Sender         string `json:"sender"`
+		ContextID      string `json:"context_id"`
+		Content        string `json:"content"`
+		ConversationID int64  `json:"conversation_id"`
+		AccountID      int64  `json:"account_id"`
 	}
 	if err := json.Unmarshal([]byte(event.Payload), &incomingData); err != nil {
 		log.Printf("❌ [GenericAgent] [%s] Erro ao decodificar payload interno: %v", a.Model.Name, err)
 		return
 	}
+
+	log.Printf("📋 [GenericAgent] [%s] Payload recebido: source='%s', sender='%s', content='%s', conversation_id=%d",
+		a.Model.Name, incomingData.Source, incomingData.Sender, incomingData.Content, incomingData.ConversationID)
 
 	conversationID := incomingData.ContextID
 	if conversationID == "" {
@@ -307,25 +312,30 @@ func (a *GenericAgent) handleTask(msg *nats.Msg) {
 				// TODO: Tratar outras ferramentas dinâmicas cadastradas no banco
 			}
 		} else {
-			log.Printf("💬 [GenericAgent] [%s] Resposta Final gerada com sucesso.", a.Model.Name)
+			log.Printf("💬 [GenericAgent] [%s] Resposta Final gerada com sucesso: '%s'", a.Model.Name, resp.Content)
 
 			type OutboundResponse struct {
-				Source  string `json:"source"`
-				Sender  string `json:"sender"`
-				Status  string `json:"status"`
-				Content string `json:"content"`
+				Source         string `json:"source"`
+				Sender         string `json:"sender"`
+				Status         string `json:"status"`
+				Content        string `json:"content"`
+				ConversationID int64  `json:"conversation_id"`
+				AccountID      int64  `json:"account_id"`
 			}
 			responsePayload, err := json.Marshal(OutboundResponse{
-				Source:  incomingData.Source,
-				Sender:  incomingData.Sender,
-				Status:  "completed",
-				Content: resp.Content,
+				Source:         incomingData.Source,
+				Sender:         incomingData.Sender,
+				Status:         "completed",
+				Content:        resp.Content,
+				ConversationID: incomingData.ConversationID,
+				AccountID:      incomingData.AccountID,
 			})
 			if err != nil {
 				log.Printf("❌ [GenericAgent] [%s] Erro ao serializar resposta final: %v", a.Model.Name, err)
 				return
 			}
 			
+			log.Printf("📤 [GenericAgent] [%s] Publicando resposta em outbound.message (ConversationID: %d)", a.Model.Name, incomingData.ConversationID)
 			a.EventBus.Publish("outbound.message", responsePayload)
 			a.EventBus.Publish("stream."+event.TaskID.String(), responsePayload)
 			break
