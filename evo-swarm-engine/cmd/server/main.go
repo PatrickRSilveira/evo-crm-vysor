@@ -121,7 +121,7 @@ func main() {
 	app.Use("/api", middleware.EvoAuthMiddleware(db))
 
 	// Adapters e Webhooks Omni-Channel
-	evolutionAdapter := adapters.NewEvolutionAdapter(evbus.GlobalEventBus, "http://evo:8080", "123")
+	evolutionAdapter := adapters.NewEvolutionAdapter(evbus.GlobalEventBus, "http://evo:8080", os.Getenv("EVOLUTION_WEBHOOK_API_KEY"))
 	chatwootAdapter := adapters.NewChatwootMirrorAdapter(evbus.GlobalEventBus, db)
 	a2aAdapter := adapters.NewA2AAdapter(evbus.GlobalEventBus)
 	msTeamsAdapter := adapters.NewMSTeamsAdapter(evbus.GlobalEventBus)
