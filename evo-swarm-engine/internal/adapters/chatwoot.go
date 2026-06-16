@@ -103,11 +103,9 @@ func (a *ChatwootMirrorAdapter) handleMessageSent(msg *nats.Msg) {
 func (a *ChatwootMirrorAdapter) handleOutboundMessage(msg *nats.Msg) {
 	var outbound struct {
 		Source         string `json:"source"`
-		Sender         string `json:"sender"`
-		Status         string `json:"status"`
-		Content        string `json:"content"`
-		ConversationID int64  `json:"conversation_id"`
+		ConversationID string `json:"conversation_id"`
 		AccountID      int64  `json:"account_id"`
+		Content        string `json:"content"`
 	}
 
 	if err := json.Unmarshal(msg.Data, &outbound); err != nil {
@@ -120,7 +118,7 @@ func (a *ChatwootMirrorAdapter) handleOutboundMessage(msg *nats.Msg) {
 		return
 	}
 
-	log.Printf("📤 [ChatwootOutbound] Enviando resposta do agente de volta ao CRM (ConversationID: %d)", outbound.ConversationID)
+	log.Printf("📤 [ChatwootOutbound] Enviando resposta do agente de volta ao CRM (ConversationID: %s)", outbound.ConversationID)
 
 	// Envia via REST API do CRM (Chatwoot interno)
 	crmURL := os.Getenv("EVO_AI_CRM_URL")
@@ -134,7 +132,8 @@ func (a *ChatwootMirrorAdapter) handleOutboundMessage(msg *nats.Msg) {
 		accountID = 1 // Fallback para account padrão
 	}
 
-	url := fmt.Sprintf("%s/api/v1/accounts/%d/conversations/%d/messages", crmURL, accountID, outbound.ConversationID)
+	// In the Evo-CRM fork, the API uses the UUID directly
+	url := fmt.Sprintf("%s/api/v1/conversations/%s/messages", crmURL, outbound.ConversationID)
 
 	reqBody, _ := json.Marshal(map[string]interface{}{
 		"content":      outbound.Content,
@@ -206,14 +205,11 @@ func (a *ChatwootMirrorAdapter) RegisterWebhookRoute(app *fiber.App) {
 				}
 
 				// Extrai conversation_id e account_id para a resposta de volta
-				var conversationID int64
+				var conversationID string
 				var accountID int64
 				if conv, ok := payload["conversation"].(map[string]interface{}); ok {
-					// Chatwoot REST API expects display_id (integer), while id is often a UUID string.
-					if displayID, ok := conv["display_id"].(float64); ok {
-						conversationID = int64(displayID)
-					} else if id, ok := conv["id"].(float64); ok {
-						conversationID = int64(id)
+					if idStr, ok := conv["id"].(string); ok {
+						conversationID = idStr
 					}
 					if accID, ok := conv["account_id"].(float64); ok {
 						accountID = int64(accID)
@@ -231,7 +227,7 @@ func (a *ChatwootMirrorAdapter) RegisterWebhookRoute(app *fiber.App) {
 					}
 				}
 
-				log.Printf("📥 [ChatwootWebhook] Detalhes: content='%s', agent_id='%s', conversation_id=%d, account_id=%d, sender='%s'",
+				log.Printf("📥 [ChatwootWebhook] Detalhes: content='%s', agent_id='%s', conversation_id='%s', account_id=%d, sender='%s'",
 					content, agentID, conversationID, accountID, sender)
 
 				// Dispara no NATS indicando Input do Usuário

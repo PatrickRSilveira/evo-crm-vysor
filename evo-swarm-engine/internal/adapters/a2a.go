@@ -57,13 +57,11 @@ func (a *A2AAdapter) RegisterRoutes(app *fiber.App, db *gorm.DB) {
 						content = c
 					}
 
-					var conversationID int64
+					var conversationID string
 					var accountID int64
 					if conv, ok := raw["conversation"].(map[string]interface{}); ok {
-						if displayID, ok := conv["display_id"].(float64); ok {
-							conversationID = int64(displayID)
-						} else if id, ok := conv["id"].(float64); ok {
-							conversationID = int64(id)
+						if idStr, ok := conv["id"].(string); ok {
+							conversationID = idStr
 						}
 						if accID, ok := conv["account_id"].(float64); ok {
 							accountID = int64(accID)

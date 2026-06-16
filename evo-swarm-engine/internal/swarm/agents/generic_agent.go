@@ -73,7 +73,7 @@ func (a *GenericAgent) handleTask(msg *nats.Msg) {
 		Sender         string `json:"sender"`
 		ContextID      string `json:"context_id"`
 		Content        string `json:"content"`
-		ConversationID int64  `json:"conversation_id"`
+		ConversationID string `json:"conversation_id"`
 		AccountID      int64  `json:"account_id"`
 	}
 	if err := json.Unmarshal([]byte(event.Payload), &incomingData); err != nil {
@@ -81,7 +81,7 @@ func (a *GenericAgent) handleTask(msg *nats.Msg) {
 		return
 	}
 
-	log.Printf("📋 [GenericAgent] [%s] Payload recebido: source='%s', sender='%s', content='%s', conversation_id=%d",
+	log.Printf("📋 [GenericAgent] [%s] Payload recebido: source='%s', sender='%s', content='%s', conversation_id='%s'",
 		a.Model.Name, incomingData.Source, incomingData.Sender, incomingData.Content, incomingData.ConversationID)
 
 	conversationID := incomingData.ContextID
@@ -319,7 +319,7 @@ func (a *GenericAgent) handleTask(msg *nats.Msg) {
 				Sender         string `json:"sender"`
 				Status         string `json:"status"`
 				Content        string `json:"content"`
-				ConversationID int64  `json:"conversation_id"`
+				ConversationID string `json:"conversation_id"`
 				AccountID      int64  `json:"account_id"`
 			}
 			responsePayload, err := json.Marshal(OutboundResponse{
@@ -335,7 +335,7 @@ func (a *GenericAgent) handleTask(msg *nats.Msg) {
 				return
 			}
 			
-			log.Printf("📤 [GenericAgent] [%s] Publicando resposta em outbound.message (ConversationID: %d)", a.Model.Name, incomingData.ConversationID)
+			log.Printf("📤 [GenericAgent] [%s] Publicando resposta em outbound.message (ConversationID: %s)", a.Model.Name, incomingData.ConversationID)
 			a.EventBus.Publish("outbound.message", responsePayload)
 			a.EventBus.Publish("stream."+event.TaskID.String(), responsePayload)
 			break
