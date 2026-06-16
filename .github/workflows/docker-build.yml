@@ -2,7 +2,7 @@ name: Build and Publish Docker Images
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "main", "master", "feature/swarm-engine" ]
   workflow_dispatch:
 
 env:
