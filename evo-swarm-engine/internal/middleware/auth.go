@@ -84,17 +84,6 @@ func EvoAuthMiddleware(db *gorm.DB) fiber.Handler {
 			return c.Next()
 		}
 
-		// Extrair agent_id do path (ex: /api/v1/a2a/1234-5678-...)
-		parts := strings.Split(path, "/")
-		var agentIDStr string
-		for i, part := range parts {
-			if part == "a2a" || part == "chat" {
-				if len(parts) > i+1 {
-					agentIDStr = parts[i+1]
-					break
-				}
-			}
-		}
 
 		if agentIDStr != "" {
 			type Agent struct {
