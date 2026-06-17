@@ -61,29 +61,69 @@ func EvoAuthMiddleware(db *gorm.DB) fiber.Handler {
 		}
 
 		// Se não encontrou na tabela APIKey, verifica se é um Agent com API Key no config (padrão Python legado / Chatwoot / evo-bot-runtime)
-		type Agent struct {
-			ID   string
-			Name string
-		}
-		var agentRow Agent
-		// Query em jsonb para achar o api_key dentro do config
-		errAgent := db.Table("evo_core_agents").Select("id, name").Where("config->>'api_key' = ?", apiKeyStr).First(&agentRow).Error
-
-		if errAgent != nil {
-			fmt.Printf("[AuthDebug] evo_core_agents query failed for key %s: %v\n", apiKeyStr, errAgent)
-		}
-
-		if errAgent == nil {
-			agentCtx := AgentContext{
-				AgentID:   agentRow.ID,
-				AgentName: agentRow.Name,
-				KeyID:     apiKeyStr,
+		// Extrair agent_id do path (ex: /api/v1/a2a/1234-5678-...)
+		parts := strings.Split(path, "/")
+		var agentIDStr string
+		for i, part := range parts {
+			if part == "a2a" || part == "chat" {
+				if len(parts) > i+1 {
+					agentIDStr = parts[i+1]
+					break
+				}
 			}
+		}
 
-			c.Locals("AgentContext", agentCtx)
-			c.Locals("is_agent_bot", true)
+		if agentIDStr != "" {
+			type Agent struct {
+				ID     string
+				Name   string
+				Config string
+			}
+			var agentRow Agent
+			// Buscar o config como texto para parse manual seguro
+			errAgent := db.Table("evo_core_agents").Select("id, name, config::text as config").Where("id = ?", agentIDStr).First(&agentRow).Error
 
-			return c.Next()
+			if errAgent == nil && agentRow.Config != "" {
+				var configMap map[string]interface{}
+				if errParse := json.Unmarshal([]byte(agentRow.Config), &configMap); errParse == nil {
+					if storedKey, ok := configMap["api_key"].(string); ok && storedKey == apiKeyStr {
+						agentCtx := AgentContext{
+							AgentID:   agentRow.ID,
+							AgentName: agentRow.Name,
+							KeyID:     apiKeyStr,
+						}
+
+						c.Locals("AgentContext", agentCtx)
+						c.Locals("is_agent_bot", true)
+
+						return c.Next()
+					} else {
+						fmt.Printf("[AuthDebug] API Key mismatch for agent %s\n", agentIDStr)
+					}
+				}
+			} else {
+				fmt.Printf("[AuthDebug] evo_core_agents query failed for agent %s: %v\n", agentIDStr, errAgent)
+			}
+		} else {
+			// Tenta query global como último recurso (caso o path não contenha o agent_id explicitamente)
+			type Agent struct {
+				ID   string
+				Name string
+			}
+			var agentRow Agent
+			errAgent := db.Table("evo_core_agents").Select("id, name").Where("config->>'api_key' = ?", apiKeyStr).First(&agentRow).Error
+			if errAgent == nil {
+				agentCtx := AgentContext{
+					AgentID:   agentRow.ID,
+					AgentName: agentRow.Name,
+					KeyID:     apiKeyStr,
+				}
+
+				c.Locals("AgentContext", agentCtx)
+				c.Locals("is_agent_bot", true)
+
+				return c.Next()
+			}
 		}
 
 		// Não encontrou em lugar nenhum no banco local. Fallback para validação remota (User Auth / Evo Auth).
