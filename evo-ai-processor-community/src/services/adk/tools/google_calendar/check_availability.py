@@ -64,6 +64,8 @@ def create_check_availability_tool(
         """
         try:
             logger.info(f"Checking calendar availability from {start_date} to {end_date}, find_slots={find_slots}")
+            logger.info(f"[CalendarConfig] Full config keys: {list(calendar_config.keys()) if calendar_config else 'None'}")
+            logger.info(f"[CalendarConfig] businessHours raw: {(calendar_config.get('settings') or calendar_config).get('businessHours', 'NOT FOUND')}")
             logger.debug(f"Calendar config received: {calendar_config}")
             logger.debug(f"Credentials available: {bool(credentials_config)}")
 
@@ -120,6 +122,9 @@ def create_check_availability_tool(
                 value = config.get(key, default)
                 # If value is a dict with 'value' key, extract it and convert units
                 if isinstance(value, dict) and "value" in value:
+                    if "enabled" in value and not value["enabled"]:
+                        return default
+
                     extracted_value = value["value"]
                     unit = value.get("unit")
 
@@ -252,6 +257,9 @@ def create_check_availability_tool(
         def get_config_value(key: str, default: Any) -> Any:
             value = config.get(key, default)
             if isinstance(value, dict) and "value" in value:
+                if "enabled" in value and not value["enabled"]:
+                    return default
+
                 extracted_value = value["value"]
                 unit = value.get("unit")
                 if key in ["minAdvanceTime", "maxDistance"] and unit == "hours":
@@ -269,10 +277,24 @@ def create_check_availability_tool(
         timezone = get_config_value("timezone", "America/Sao_Paulo")
         min_advance_time = get_config_value("minAdvanceTime", 0)
         max_duration = get_config_value("maxDuration", 0)
-        business_hours_enabled = business_hours.get("enabled") if isinstance(business_hours, dict) else False
+
+        # business_hours_enabled: True if explicitly enabled OR if there are day configs present
+        # (handles cases where 'enabled' key is missing but days are configured)
+        if isinstance(business_hours, dict):
+            if "enabled" in business_hours:
+                business_hours_enabled = bool(business_hours["enabled"])
+            else:
+                # Infer enabled from presence of day configs
+                day_keys = {"monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"}
+                business_hours_enabled = any(
+                    k in business_hours and business_hours[k]
+                    for k in day_keys
+                )
+        else:
+            business_hours_enabled = False
 
         logger.info(
-            f"Finding available slots: business_hours_enabled={business_hours_enabled}, "
+            f"[FindSlots] business_hours raw={business_hours}, enabled={business_hours_enabled}, "
             f"timezone={timezone}, min_advance={min_advance_time}h, max_duration={max_duration}min"
         )
 
@@ -414,6 +436,9 @@ def create_check_availability_tool(
     def get_config_value(key: str, default: Any) -> Any:
         value = config.get(key, default)
         if isinstance(value, dict) and "value" in value:
+            if "enabled" in value and not value["enabled"]:
+                return default
+
             extracted_value = value["value"]
             unit = value.get("unit")
 
@@ -461,23 +486,33 @@ def create_check_availability_tool(
 
     check_calendar_availability.__doc__ = f"""Check Google Calendar availability for a time range or find available time slots.
 
-This tool can:
-1. Check if a specific time slot is available
-2. Find available time slots within a date range
+This tool has TWO modes:
+
+MODE 1 — FIND AVAILABLE SLOTS (use this when customer asks "what times are available?", "quando você tem horários livres?", "quais horários posso marcar?", "me mostra os horários disponíveis"):
+  → Call with find_slots=True and a date range (e.g., the next 7 days)
+  → The tool returns a list of available_slots the customer can choose from
+  → ALWAYS use find_slots=True when you need to present options to the customer
+  → Example: start_date='2024-01-15T00:00:00', end_date='2024-01-22T23:59:59', find_slots=True, slot_duration=60
+
+MODE 2 — CHECK SPECIFIC SLOT (use this when customer already gave you a specific time):
+  → Call with find_slots=False (default) and the exact start/end times
+  → The tool returns whether that specific slot is available
+  → Example: start_date='2024-01-16T14:00:00', end_date='2024-01-16T15:00:00'
 {bh_description}{constraints_description}
 
-IMPORTANT: Always respect the business hours and scheduling constraints above when suggesting meeting times to customers.
+CRITICAL RULES:
+- When customer asks WHAT TIMES are available → ALWAYS use find_slots=True
+- When customer GIVES a specific time → use find_slots=False to confirm
+- Always respect business hours and constraints above
+- Present slots to customer in a friendly, readable format (e.g., "Segunda-feira 18/01 às 09:00", "Terça-feira 19/01 às 14:00")
+- Show at most 5-8 slots to avoid overwhelming the customer
 
 Args:
-    start_date (str): Start date and time in ISO format (e.g., '2024-01-15T09:00:00') in timezone {timezone}
-    end_date (str): End date and time in ISO format (e.g., '2024-01-15T10:00:00') in timezone {timezone}
+    start_date (str): Start date/time ISO format in timezone {timezone} (e.g., '2024-01-15T09:00:00')
+    end_date (str): End date/time ISO format in timezone {timezone} (e.g., '2024-01-15T10:00:00')
     calendar_id (str, optional): Calendar ID to check (default: 'primary')
-    find_slots (bool, optional): If True, find available time slots instead of just checking if range is free (default: False)
-    slot_duration (int, optional): Duration of each time slot in minutes (used when find_slots=True, default: 60)
-
-Examples:
-- Check if 2PM-3PM tomorrow is free: start_date='2024-01-16T14:00:00', end_date='2024-01-16T15:00:00'
-- Find available 1-hour slots this week: start_date='2024-01-15T00:00:00', end_date='2024-01-21T23:59:59', find_slots=True, slot_duration=60
+    find_slots (bool): True = list available slots for customer to choose; False = check one specific time (default: False)
+    slot_duration (int, optional): Duration of each slot in minutes when find_slots=True (default: 60)
 """
 
     return check_calendar_availability

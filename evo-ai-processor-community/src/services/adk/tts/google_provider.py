@@ -4,6 +4,7 @@ import base64
 import aiohttp
 
 from .base import TTSProvider
+from src.utils.ssml_humanizer import humanize_text_to_ssml
 
 logger = logging.getLogger(__name__)
 
@@ -25,10 +26,13 @@ class GoogleProvider(TTSProvider):
             
         url = f"https://texttospeech.googleapis.com/v1/text:synthesize?key={api_key}"
         
+        formatted_text = humanize_text_to_ssml(text)
+        
+        # Determine if we are sending plain text or SSML
+        input_payload = {"ssml": formatted_text} if formatted_text.startswith("<speak>") else {"text": formatted_text}
+        
         payload = {
-            "input": {
-                "text": text
-            },
+            "input": input_payload,
             "voice": {
                 "languageCode": language_code,
                 "name": voice_id

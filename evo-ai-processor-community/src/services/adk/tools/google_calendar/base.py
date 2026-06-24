@@ -109,11 +109,20 @@ class GoogleCalendarClient:
         Returns:
             True if within business hours, False otherwise
         """
-        if not business_hours or not business_hours.get("enabled"):
+        if not business_hours:
             return True
 
-        # Get day of week (0 = Monday, 6 = Sunday)
+        if "enabled" in business_hours and not business_hours["enabled"]:
+            return True
+
         day_names = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+
+        # If "enabled" is missing, check if any day has been enabled
+        if "enabled" not in business_hours:
+            if not any(k in business_hours and business_hours[k].get("enabled") for k in day_names):
+                return True
+
+        # Get day of week (0 = Monday, 6 = Sunday)
         day_name = day_names[dt.weekday()]
 
         day_config = business_hours.get(day_name, {})
@@ -259,6 +268,9 @@ class GoogleCalendarClient:
             value = config.get(key, default)
             # If value is a dict with 'value' key, extract it and convert units
             if isinstance(value, dict) and "value" in value:
+                if "enabled" in value and not value["enabled"]:
+                    return default
+
                 extracted_value = value["value"]
                 unit = value.get("unit")
 

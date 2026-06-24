@@ -411,8 +411,23 @@ class GoogleCalendarService:
             if not busy_periods:
                 free_slots.append({"start": start, "end": end})
             else:
-                # TODO: Implement free slot calculation based on busy periods
-                pass
+                # Sort busy periods by start time
+                busy_periods.sort(key=lambda x: x.get('start', ''))
+                
+                current_start = start
+                for busy in busy_periods:
+                    busy_start = busy.get('start')
+                    busy_end = busy.get('end')
+                    
+                    if current_start < busy_start:
+                        free_slots.append({"start": current_start, "end": busy_start})
+                    
+                    if current_start < busy_end:
+                        current_start = busy_end
+                
+                # Check slot from last busy period up to end
+                if current_start < end:
+                    free_slots.append({"start": current_start, "end": end})
 
             return {
                 "available": len(busy_periods) == 0,

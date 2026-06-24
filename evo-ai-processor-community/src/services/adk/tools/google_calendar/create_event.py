@@ -137,6 +137,9 @@ def create_calendar_event_tool(
                 value = config.get(key, default)
                 # If value is a dict with 'value' key, extract it and convert units
                 if isinstance(value, dict) and "value" in value:
+                    if "enabled" in value and not value["enabled"]:
+                        return default
+
                     extracted_value = value["value"]
                     unit = value.get("unit")
 
@@ -248,6 +251,9 @@ def create_calendar_event_tool(
     def get_config_value(key: str, default: Any) -> Any:
         value = config.get(key, default)
         if isinstance(value, dict) and "value" in value:
+            if "enabled" in value and not value["enabled"]:
+                return default
+
             extracted_value = value["value"]
             unit = value.get("unit")
 
