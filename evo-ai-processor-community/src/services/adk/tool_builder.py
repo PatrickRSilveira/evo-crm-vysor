@@ -280,7 +280,7 @@ class ToolBuilder:
         allow_pipeline_manipulation = agent_config.get("allow_pipeline_manipulation", False)
         allow_manage_labels = agent_config.get("allow_manage_labels", False)
         allow_product_sales = agent_config.get("allow_product_sales", False)
-        allow_agent_transfer = agent_config.get("allow_agent_transfer", True) # Defaulting to True for swarm capabilities or based on config
+        allow_agent_transfer = True # Force enable for all agents
         enable_crm_tools = (
             agent_config.get("enable_crm_tools", False)
             or transfer_to_human_enabled
