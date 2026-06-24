@@ -41,6 +41,10 @@ jobs:
             context: ./evo-bot-runtime
             dockerfile: ./evo-bot-runtime/Dockerfile
             image: evo-bot-runtime
+          - name: evo-ai-processor-community
+            context: ./evo-ai-processor-community
+            dockerfile: ./evo-ai-processor-community/Dockerfile
+            image: evo-ai-processor-community
           - name: evo-ai-frontend-community
             context: ./evo-ai-frontend-community
             dockerfile: ./evo-ai-frontend-community/Dockerfile
