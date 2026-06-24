@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Button } from '@evoapi/design-system/button';
 import { Badge } from '@evoapi/design-system/badge';
 import { Card, CardHeader, CardTitle, CardContent } from '@evoapi/design-system/card';
-import { Settings, UserPlus, UserMinus, Tag, Zap, Check } from 'lucide-react';
+import { Settings, UserPlus, UserMinus, Tag, Zap, Check, Bot } from 'lucide-react';
 import { toast } from 'sonner';
 import { Conversation } from '@/types/chat/api';
 import { useConversations } from '@/hooks/chat/useConversations';
@@ -136,13 +136,23 @@ const ConversationActions: React.FC<ConversationActionsProps> = ({
         </CardHeader>
         <CardContent className="pt-0 space-y-2">
           {/* TODO: Implementar AssigneeSelector real */}
-          <div className="text-sm text-muted-foreground p-3 border rounded-lg bg-muted/30">
-            {conversation?.assignee_id
-              ? t('contactSidebar.conversationActions.assignment.assignedTo', {
-                  id: conversation.assignee_id,
-                })
-              : t('contactSidebar.conversationActions.assignment.notAssigned')}
-          </div>
+          {conversation?.active_agent_id ? (
+            <div className="flex items-center gap-2 text-sm text-primary p-3 border border-primary/20 rounded-lg bg-primary/5">
+              <Bot className="h-4 w-4" />
+              <span>
+                {conversation.active_agent_bot?.name || 'IA Swarm no controle'}
+                {conversation.state === 'HANDING_OFF' && <span className="animate-pulse ml-1 text-xs">...</span>}
+              </span>
+            </div>
+          ) : (
+            <div className="text-sm text-muted-foreground p-3 border rounded-lg bg-muted/30">
+              {conversation?.assignee_id
+                ? t('contactSidebar.conversationActions.assignment.assignedTo', {
+                    id: conversation.assignee_id,
+                  })
+                : t('contactSidebar.conversationActions.assignment.notAssigned')}
+            </div>
+          )}
 
           <Button
             variant="outline"

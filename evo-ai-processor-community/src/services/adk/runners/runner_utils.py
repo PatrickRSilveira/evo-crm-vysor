@@ -248,6 +248,35 @@ class RunnerUtils:
                     logger.info(f"[RunnerUtils] Storing contact data: name={value.get('name', 'N/A')}, id={value.get('id', 'N/A')}")
                 elif key == "evoai_crm_data" and isinstance(value, dict) and "contact" in value:
                     contact_in_data = value.get("contact", {})
+                    
+            # Try to fetch and inject handoff context
+            conversation_id = metadata.get("conversation_id")
+            if not conversation_id and "evoai_crm_data" in metadata:
+                conversation_data = metadata["evoai_crm_data"].get("conversation", {})
+                conversation_id = conversation_data.get("id") or conversation_data.get("uuid")
+                
+            if conversation_id:
+                try:
+                    from sqlalchemy import text
+                    result = self.db.execute(text("SELECT summary, entities FROM conversation_contexts WHERE conversation_id = :cid"), {"cid": conversation_id}).fetchone()
+                    if result:
+                        summary, entities = result
+                        if summary:
+                            state_changes = {
+                                "handoff_summary": summary,
+                                "handoff_entities": entities
+                            }
+                            actions_with_update = EventActions(state_delta=state_changes)
+                            context_event = Event(
+                                invocation_id=f"handoff_context_{int(time.time())}",
+                                author="system",
+                                actions=actions_with_update,
+                                timestamp=time.time(),
+                            )
+                            await session_service.append_event(session, context_event)
+                            logger.info(f"[RunnerUtils] Injected handoff context into session for conversation {conversation_id}")
+                except Exception as e:
+                    logger.error(f"[RunnerUtils] Error fetching handoff context: {e}")
                     logger.info(f"[RunnerUtils] Storing evoai_crm_data with contact: name={contact_in_data.get('name', 'N/A') if isinstance(contact_in_data, dict) else 'N/A'}")
                 
                 state_changes = {f"{key}": value}

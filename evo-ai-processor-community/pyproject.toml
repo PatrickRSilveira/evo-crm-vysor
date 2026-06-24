@@ -101,7 +101,6 @@ filterwarnings = [
 source = ["src"]
 omit = ["tests/*", "alembic/*"]
 
-[tool.pyrefly]
+[tool.pyright]
 # Modules installed in Docker container but not in local Windows dev environment.
-# These are false positives — the code works correctly at runtime.
-ignore_missing_imports = true
+reportMissingImports = false

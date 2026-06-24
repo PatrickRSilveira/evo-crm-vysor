@@ -280,6 +280,7 @@ class ToolBuilder:
         allow_pipeline_manipulation = agent_config.get("allow_pipeline_manipulation", False)
         allow_manage_labels = agent_config.get("allow_manage_labels", False)
         allow_product_sales = agent_config.get("allow_product_sales", False)
+        allow_agent_transfer = agent_config.get("allow_agent_transfer", True) # Defaulting to True for swarm capabilities or based on config
         enable_crm_tools = (
             agent_config.get("enable_crm_tools", False)
             or transfer_to_human_enabled
@@ -288,6 +289,7 @@ class ToolBuilder:
             or allow_pipeline_manipulation
             or allow_manage_labels
             or allow_product_sales
+            or allow_agent_transfer
         )
 
         if enable_crm_tools:
@@ -299,6 +301,7 @@ class ToolBuilder:
                 create_manage_conversation_labels_tool,
                 create_link_product_to_pipeline_item_tool,
             )
+            from src.services.adk.tools.evo_crm.transfer_conversation import create_transfer_conversation_tool
 
             try:
                 # Add transfer_to_human tool if enabled
@@ -358,6 +361,12 @@ class ToolBuilder:
                     logger.info(
                         f"Added link_product_to_pipeline_item tool from CRM tools"
                     )
+
+                # Add transfer_conversation tool for A2A handoffs
+                if allow_agent_transfer:
+                    transfer_conv_tool = create_transfer_conversation_tool()
+                    self.tools.append(transfer_conv_tool)
+                    logger.info(f"Added transfer_conversation tool for A2A handoffs")
 
             except Exception as e:
                 logger.error(f"Error loading CRM tools: {e}")

@@ -225,6 +225,9 @@ export interface ConversationUpdatedEvent {
   additional_attributes?: Record<string, unknown>;
   custom_attributes?: Record<string, unknown>;
   priority?: string | null;
+  active_agent_id?: string | null;
+  active_agent_bot?: any | null;
+  state?: string | null;
   can_reply?: boolean;
   channel?: string;
   snoozed_until?: string | null;

@@ -58,6 +58,9 @@ export interface Conversation {
   assignee: Agent | null;
   team: Team | null;
   labels: Label[];
+  active_agent_id?: string | null;
+  active_agent_bot?: any | null; // Represents the Swarm AI agent
+  state?: 'ACTIVE' | 'HANDING_OFF' | 'SUSPENDED' | null;
   pipelines?: Array<{
     id: string;
     name: string;

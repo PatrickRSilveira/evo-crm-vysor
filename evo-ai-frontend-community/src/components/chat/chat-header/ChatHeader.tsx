@@ -23,6 +23,7 @@ import {
   Archive,
   GitBranch,
   Check,
+  Bot,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -574,7 +575,7 @@ const ChatHeader = ({
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
               {inboxName && (
                 <>
                   <span>{inboxName}</span>
@@ -584,6 +585,16 @@ const ChatHeader = ({
               <span>
                 {t('chatHeader.status')} {getStatusLabel(conversation.status)}
               </span>
+              {conversation.active_agent_id && (
+                <>
+                  <span>•</span>
+                  <span className="flex items-center gap-1 text-primary font-medium bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
+                    <Bot className="h-3 w-3" />
+                    {conversation.active_agent_bot?.name || 'IA Swarm'}
+                    {conversation.state === 'HANDING_OFF' && <span className="animate-pulse ml-1 text-xs">...</span>}
+                  </span>
+                </>
+              )}
             </div>
           </div>
         </div>

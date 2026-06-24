@@ -322,6 +322,9 @@ Rails.application.routes.draw do
 
           # Gmail webhooks
           post 'gmail/pubsub', to: 'webhooks/gmail#pubsub'
+          
+          # AI Processor Webhooks
+          post 'agent_processor/handoff', to: 'webhooks/agent_processor#handoff'
         end
       end
 

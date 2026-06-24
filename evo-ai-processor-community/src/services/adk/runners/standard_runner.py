@@ -477,6 +477,11 @@ class StandardRunner:
                     if event.actions and event.actions.escalate:
                         final_response_text = f"Agent escalated: {event.error_message or 'No specific message.'}"
                         break
+                        
+                    # Check for system instruction to halt execution (e.g. A2A Handoff)
+                    if "__system_instruction" in str(event_dict) and "HALT_EXECUTION" in str(event_dict):
+                        logger.info("Halting agent execution due to system instruction (e.g. A2A Handoff)")
+                        break
 
                 logger.info(
                     f"Session tokens: {total_tokens} (prompt={total_prompt_tokens},"

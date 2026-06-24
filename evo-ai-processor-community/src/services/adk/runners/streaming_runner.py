@@ -478,6 +478,11 @@ class StreamingRunner:
 
                         yield json.dumps(event_dict)
 
+                        # Check for system instruction to halt execution (e.g. A2A Handoff)
+                        if "__system_instruction" in str(event_dict) and "HALT_EXECUTION" in str(event_dict):
+                            logger.info("Halting streaming execution due to system instruction (e.g. A2A Handoff)")
+                            break
+
                     except (GeneratorExit, asyncio.CancelledError):
                         logger.info("Client disconnected, stopping stream")
                         break
