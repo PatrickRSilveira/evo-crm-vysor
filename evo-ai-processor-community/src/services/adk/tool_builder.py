@@ -364,7 +364,10 @@ class ToolBuilder:
 
                 # Add transfer_conversation tool for A2A handoffs
                 if allow_agent_transfer:
-                    transfer_conv_tool = create_transfer_conversation_tool()
+                    transfer_rules = agent_config.get("transfer_rules", [])
+                    transfer_conv_tool = create_transfer_conversation_tool(
+                        transfer_rules=transfer_rules if isinstance(transfer_rules, list) else []
+                    )
                     self.tools.append(transfer_conv_tool)
                     logger.info(f"Added transfer_conversation tool for A2A handoffs")
 

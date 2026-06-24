@@ -14,26 +14,39 @@ from src.services.adk.tools.evo_crm.transfer_to_human import _extract_conversati
 
 logger = setup_logger(__name__)
 
-def create_transfer_conversation_tool() -> FunctionTool:
+def create_transfer_conversation_tool(
+    transfer_rules: Optional[List[Dict[str, Any]]] = None
+) -> FunctionTool:
     """Create the transfer_conversation tool for A2A handoffs.
     
     This tool safely and atomically transfers a conversation to a new AI agent,
     generating a session trace, context updates, and event hooks.
     """
     
+    rules = transfer_rules or []
+    agent_options = []
+    for rule in rules:
+        if rule.get("transferTo") == "agent" and rule.get("agentId"):
+            agent_options.append(f"- Agent: '{rule.get('name', 'Unknown')}', UUID: '{rule.get('agentId')}'")
+    
+    agent_options_str = "\n".join(agent_options) if agent_options else "No specific agent routing rules configured."
+
     async def transfer_conversation(
         target_agent_id: str,
         reason: str,
         conversation_id: Optional[str] = None,
         tool_context: Optional[ToolContext] = None,
     ) -> Dict[str, Any]:
-        """Transfer the current conversation to another AI Agent.
+        f"""Transfer the current conversation to another AI Agent.
         
         Use this tool when the current conversation needs to be handled by 
         a different, specialized AI agent (e.g. Sales, Finance, Support).
         
+        Available agents to transfer to based on your configuration:
+{agent_options_str}
+
         Args:
-            target_agent_id: The UUID of the destination agent to transfer to.
+            target_agent_id: The UUID of the destination agent to transfer to (MUST be a valid UUID from the available agents list).
             reason: Explanation of why the transfer is happening.
             conversation_id: Auto-extracted conversation ID.
             tool_context: The tool context containing session information (auto-provided).
