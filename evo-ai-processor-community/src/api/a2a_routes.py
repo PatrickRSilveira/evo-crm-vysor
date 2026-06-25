@@ -1225,6 +1225,17 @@ async def handle_message_send(
                 )
                 if transfer_result.get("success"):
                     logger.info(f"✅ Handoff manual concluído para {target_agent_id}")
+                    # 2. Publish Handoff Event to notify the CRM and other services
+                    try:
+                        from src.services.event_service import get_event_service
+                        event_service = get_event_service()
+                        event_service.publish_handoff_event(
+                            conversation_id=real_conversation_id,
+                            payload=transfer_result
+                        )
+                        logger.info(f"📢 Handoff event published successfully for {real_conversation_id}")
+                    except Exception as ev_err:
+                        logger.error(f"⚠️ Failed to publish handoff event: {ev_err}")
                 else:
                     logger.error(f"❌ Falha no handoff manual: {transfer_result.get('error')}")
             except Exception as e:
