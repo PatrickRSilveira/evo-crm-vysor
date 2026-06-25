@@ -226,7 +226,7 @@ async def transfer_conversation(
                 insert_session,
                 session_id,
                 uuid.UUID(conversation_id),
-                uuid.UUID(to_agent_id),
+                uuid.UUID(bot_id),
                 summary,
                 json.dumps(entities)
             )
