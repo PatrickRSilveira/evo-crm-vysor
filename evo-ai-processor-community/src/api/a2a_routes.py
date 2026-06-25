@@ -1214,8 +1214,12 @@ async def handle_message_send(
             logger.info(f"🔄 Intercepted TRANSFER_TO tag for agent: {target_agent_id}")
             try:
                 from src.services.handoff_service import transfer_conversation as atomic_transfer
+                real_conversation_id = context_id
+                if metadata and "evoai_crm_data" in metadata:
+                    real_conversation_id = metadata["evoai_crm_data"].get("conversation_id", context_id)
+                    
                 transfer_result = await atomic_transfer(
-                    conversation_id=context_id,
+                    conversation_id=real_conversation_id,
                     to_agent_id=target_agent_id,
                     reason="Handoff manual via NLP tag."
                 )
