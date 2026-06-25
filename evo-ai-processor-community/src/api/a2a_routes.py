@@ -532,7 +532,6 @@ def clean_message_content(content: str, role: str) -> str:
         if content.strip().startswith("{") and "jsonrpc" in content:
             try:
                 # Try to parse as JSON and extract the actual response text
-                import json
 
                 json_data = json.loads(content)
 
@@ -757,6 +756,7 @@ async def process_a2a_message(
     if preconditions_error:
         return preconditions_error
 
+    request_body = {}
     try:
         # Parse JSON-RPC request
         request_body = await request.json()
@@ -1104,7 +1104,6 @@ async def handle_message_send(
         
         # If it's a UUID, decrypt it using the DB
         if api_key and db:
-            import uuid
             from src.services.apikey_service import get_decrypted_api_key
             try:
                 key_uuid = uuid.UUID(api_key)
@@ -1116,12 +1115,13 @@ async def handle_message_send(
                 
         api_key_valid = bool(api_key and api_key.lower() not in ("null", "none", "undefined", "false", "0"))
         
+        respond_in_audio = tts_config.get("respondInAudio", "when_client_asks")
+        metadata = params.get("metadata", {})
+        has_audio = metadata.get("has_audio", False) or has_audio_in_files
+        
         if api_key_valid:
-            respond_in_audio = tts_config.get("respondInAudio", "when_client_asks")
             
-            # Check if the user sent an audio message
-            metadata = params.get("metadata", {})
-            has_audio = metadata.get("has_audio", False) or has_audio_in_files
+            pass
         
         # Ensure metadata has_audio is updated for fallback logic later in this function
         if has_audio and "has_audio" not in metadata:
@@ -1248,34 +1248,37 @@ async def handle_message_send(
                                     import asyncio
                                     from src.services.adk.runners.standard_runner import StandardRunner
                                     from src.services.adk.tools.evo_crm.base import EvoCrmClient
+                                    from src.config.database import SessionLocal
                                     
                                     await asyncio.sleep(2) # Give CRM time to process
                                     
                                     system_message = "[SISTEMA] O usuário foi transferido para você pelo atendente anterior. Apresente-se e continue o atendimento com base no histórico."
-                                    runner = StandardRunner()
-                                    
-                                    # We use context_id for the external_id to keep the same session lineage if possible
-                                    logger.info(f"🤖 Auto-triggering new agent {new_agent_id} after handoff")
-                                    result = await runner.run_agent(
-                                        agent_id=new_agent_id,
-                                        external_id=context_id,
-                                        message=system_message
-                                    )
-                                    
-                                    final_text = result.get("final_response", "")
-                                    if final_text:
-                                        crm_client = EvoCrmClient()
-                                        await crm_client.post(
-                                            f"/api/v1/conversations/{real_conversation_id}/messages",
-                                            json_data={
-                                                "content": final_text,
-                                                "message_type": "outgoing",
-                                                "private": False
-                                            }
+                                    background_db = SessionLocal()
+                                    try:
+                                        runner = StandardRunner(db=background_db)
+                                        logger.info(f"🤖 Auto-triggering new agent {new_agent_id} after handoff")
+                                        result = await runner.run_agent(
+                                            agent_id=new_agent_id,
+                                            external_id=context_id,
+                                            message=system_message
                                         )
-                                        logger.info(f"✅ Successfully auto-triggered new agent {new_agent_id} and posted reply to conversation {real_conversation_id}")
-                                    else:
-                                        logger.warning(f"⚠️ Auto-triggered new agent {new_agent_id} but it returned empty response")
+                                        
+                                        final_text = result.get("final_response", "")
+                                        if final_text:
+                                            crm_client = EvoCrmClient()
+                                            await crm_client.post(
+                                                f"/api/v1/conversations/{real_conversation_id}/messages",
+                                                json_data={
+                                                    "content": final_text,
+                                                    "message_type": "outgoing",
+                                                    "private": False
+                                                }
+                                            )
+                                            logger.info(f"✅ Successfully auto-triggered new agent {new_agent_id} and posted reply to conversation {real_conversation_id}")
+                                        else:
+                                            logger.warning(f"⚠️ Auto-triggered new agent {new_agent_id} but it returned empty response")
+                                    finally:
+                                        background_db.close()
                                 except Exception as inner_e:
                                     logger.error(f"❌ Error auto-triggering new agent: {inner_e}")
                             
@@ -1340,32 +1343,39 @@ async def handle_message_send(
                                         from src.services.adk.runners.standard_runner import StandardRunner
                                         from src.services.adk.tools.evo_crm.base import EvoCrmClient
                                         
+                                        from src.config.database import SessionLocal
+                                        
                                         await asyncio.sleep(2) # Give CRM time to process
                                         
                                         system_message = "[SISTEMA] O usuário foi transferido para você pelo atendente anterior. Apresente-se e continue o atendimento com base no histórico."
-                                        runner = StandardRunner()
                                         
-                                        logger.info(f"🤖 Auto-triggering new agent {new_agent_id} after handoff")
-                                        result = await runner.run_agent(
-                                            agent_id=new_agent_id,
-                                            external_id=context_id,
-                                            message=system_message
-                                        )
-                                        
-                                        final_text = result.get("final_response", "")
-                                        if final_text:
-                                            crm_client = EvoCrmClient()
-                                            await crm_client.post(
-                                                f"/api/v1/conversations/{real_conversation_id}/messages",
-                                                json_data={
-                                                    "content": final_text,
-                                                    "message_type": "outgoing",
-                                                    "private": False
-                                                }
+                                        background_db = SessionLocal()
+                                        try:
+                                            runner = StandardRunner(db=background_db)
+                                            
+                                            logger.info(f"🤖 Auto-triggering new agent {new_agent_id} after handoff")
+                                            result = await runner.run_agent(
+                                                agent_id=new_agent_id,
+                                                external_id=context_id,
+                                                message=system_message
                                             )
-                                            logger.info(f"✅ Successfully auto-triggered new agent {new_agent_id} and posted reply to conversation {real_conversation_id}")
-                                        else:
-                                            logger.warning(f"⚠️ Auto-triggered new agent {new_agent_id} but it returned empty response")
+                                            
+                                            final_text = result.get("final_response", "")
+                                            if final_text:
+                                                crm_client = EvoCrmClient()
+                                                await crm_client.post(
+                                                    f"/api/v1/conversations/{real_conversation_id}/messages",
+                                                    json_data={
+                                                        "content": final_text,
+                                                        "message_type": "outgoing",
+                                                        "private": False
+                                                    }
+                                                )
+                                                logger.info(f"✅ Successfully auto-triggered new agent {new_agent_id} and posted reply to conversation {real_conversation_id}")
+                                            else:
+                                                logger.warning(f"⚠️ Auto-triggered new agent {new_agent_id} but it returned empty response")
+                                        finally:
+                                            background_db.close()
                                     except Exception as inner_e:
                                         logger.error(f"❌ Error auto-triggering new agent: {inner_e}")
                                 
@@ -2111,6 +2121,7 @@ async def get_conversation_history(
             status_code=status.HTTP_404_NOT_FOUND
         )
 
+    request_body = {}
     try:
         # Parse JSON-RPC request
         request_body = await request.json()
